@@ -1,0 +1,40 @@
+.vercel
+.env*
+
+# Local secrets and credentials
+*.pem
+*.key
+*.p12
+*.pfx
+credentials*.json
+secrets*.json
+
+# Dependencies and local caches
+node_modules/
+.pnpm-store/
+.cache/
+.vite/
+coverage/
+.nyc_output/
+.eslintcache
+*.tsbuildinfo
+
+# Generated output and local QA captures
+dist/
+qa-*.png
+design-qa.md
+.artifacts/
+*.log
+*.tmp
+*.temp
+*.bak
+
+# Editor-local files
+.idea/
+.vscode/
+*.suo
+*.user
+
+# OS metadata
+.DS_Store
+Thumbs.db
