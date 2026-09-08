@@ -19,7 +19,7 @@ Revolution**.
 
 ## Live Prototype
 
-[Explore MemQuest](https://webxr-test-one.vercel.app/)
+[Explore MemQuest]([https://memquest.vercel.app/])
 
 ## Key Experiences
 
