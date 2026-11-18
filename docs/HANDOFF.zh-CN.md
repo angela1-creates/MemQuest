@@ -538,7 +538,11 @@ People 的当前人物是 Samuel Adams、Thomas Hutchinson、George Hewes、John
 
 ### 7.8 全局 Challenges 和 Progress
 
-Challenges 当前有四类任务：港口调查、事件排序、人物视角、证据推理。可以按时代、技能和完成状态筛选；跳到资料页再返回时，应保留挑战进度、答案和排序。
+Challenges 保留港口调查、事件排序、人物视角和证据推理，并在其上加入四项事件任务。可以按时代、技能和完成状态筛选；跳到资料页再返回时，应保留挑战进度、线索、提示、答案和排序。
+
+当前本地版本还加入了 **History Time Travelers**：Stamp Act、Boston Massacre、Boston Tea Party、First Continental Congress 各有一项可续做任务。每项任务要求先进入真实的 Timeline / People / Evidence 资料，再返回记录两条隐藏线索；普通模式可逐级打开三层提示，Challenge mode 会隐藏提示。完成两道知识题后获得一张档案式收藏物。四张收藏物都获得后，最终四事件排序题在界面中解锁。提示不自动算发现、不扣分；重试不重复增加完成数，题目表现继续使用“最近 100 次练习中每道不同题目的最新答案”规则。
+
+四张高清扫描海报位于 `src/assets/scan-posters/`。海报上方保留大号英文事件名与年份，供 OCR 使用；下方事件画面为生成式历史诠释，也为未来重新编译图片目标提供更明显的视觉特征。它们目前是本地候选素材，不等于已经通过真实手机的 OCR、三次连续图片识别或 Page anchor 验证；作品集与研究记录必须明确区分“已生成素材”和“已实机验证目标”。
 
 Progress 把**看过什么**与**答得怎样**分开：
 

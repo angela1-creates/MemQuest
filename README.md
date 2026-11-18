@@ -77,6 +77,19 @@ cause-and-effect relationships through a short interactive assessment.
 Complete investigations, ordering challenges, perspective questions,
 evidence reasoning, and memory checks while tracking learning progress.
 
+The **History Time Travelers** mission path turns the four supported
+American Revolution events into short investigations. Each mission asks
+learners to open real Timeline, People, or Evidence records, recover two
+hidden clues, use optional progressive hints, complete two recall
+questions, and collect an archive artifact. An optional challenge mode
+hides hints. Recovering all four artifacts unlocks the final timeline
+ordering puzzle.
+
+Printable high-resolution OCR posters for the four events are stored in
+`src/assets/scan-posters/`. Their generated scenes are historical
+interpretations; camera OCR and image-target tracking still require
+verification on real devices.
+
 ## Experience Structure
 
 ``` text

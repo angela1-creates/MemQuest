@@ -1,17 +1,22 @@
 import { useEffect, useRef, useState } from "react";
-import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, BookOpen, Check, CheckCircle, Clock, Compass, Flag, Medal, Sparkle, Target, TrendUp, WarningCircle } from "@phosphor-icons/react";
+import { Archive, ArrowDown, ArrowLeft, ArrowRight, ArrowUp, BookOpen, Check, CheckCircle, Clock, Compass, Flag, Lightbulb, Lock, Medal, Sparkle, Target, TrendUp, WarningCircle } from "@phosphor-icons/react";
 import { CHALLENGES, LEARNING_CATALOG, LEARNING_SKILLS, REVOLUTION_UNIT_ID, getChallenge, getUnit } from "./learningData.js";
-import { challengeStatus, getRecommendation, getUnitSummary, harborSteps, skillResults, unitLibrary } from "./learningState.js";
+import { challengeStatus, challengeUnlocked, getRecommendation, getUnitSummary, harborSteps, skillResults, unitLibrary } from "./learningState.js";
 import { HARBOR_CLUES } from "./libraryData.js";
 import { TIMELINE_EVENTS } from "./scanData.js";
+import { TIME_TRAVELER_MISSION_IDS } from "./missionData.js";
 import harborImage from "./assets/timeline/boston-tea-party-1773.webp";
 import timelineImage from "./assets/timeline/continental-congress-1774.webp";
 import peopleImage from "./assets/archive/revolution-people-triptych.jpg";
 import evidenceImage from "./assets/archive/tea-party-evidence-table.jpg";
+import stampActPoster from "./assets/timeline/stamp-act-1765.webp";
+import massacrePoster from "./assets/timeline/boston-massacre-1770.webp";
+import teaPartyPoster from "./assets/timeline/boston-tea-party-1773.webp";
+import congressPoster from "./assets/timeline/continental-congress-1774.webp";
 import "./global.css";
 
-const IMAGES = { harbor: harborImage, timeline: timelineImage, people: peopleImage, evidence: evidenceImage };
-const STATUS_LABELS = { "not-started": "Not started", "in-progress": "In progress", complete: "Completed" };
+const IMAGES = { harbor: harborImage, timeline: timelineImage, people: peopleImage, evidence: evidenceImage, "stamp-act": stampActPoster, massacre: massacrePoster, "tea-party": teaPartyPoster, congress: congressPoster };
+const STATUS_LABELS = { locked: "Locked", "not-started": "Not started", "in-progress": "In progress", complete: "Completed" };
 const dateLabel = date => new Date(date).toLocaleDateString("en", { month: "short", day: "numeric" });
 
 function ActionButton({ children, onClick, secondary = false, ...props }) {
@@ -19,10 +24,11 @@ function ActionButton({ children, onClick, secondary = false, ...props }) {
 }
 
 function ChallengeCard({ challenge, state, onSelect }) {
-  const status = challengeStatus(state, challenge.id);
+  const unlocked = challengeUnlocked(state, challenge);
+  const status = unlocked ? challengeStatus(state, challenge.id) : "locked";
   return <button type="button" className="challenge-card" onClick={() => onSelect(challenge.id)}>
-    <div className={`challenge-card-image is-${challenge.image}`} style={{ backgroundImage: `linear-gradient(180deg, transparent 15%, #111c2e 100%), url(${IMAGES[challenge.image]})` }}><span className={`journey-status status-${status}`}>{STATUS_LABELS[status]}</span></div>
-    <div className="challenge-card-copy"><small>{getUnit(challenge.unitId).title}</small><h3>{challenge.title}</h3><p>{challenge.description}</p><div><span><Clock size={15} />{challenge.duration}</span><ArrowRight size={21} /></div></div>
+    <div className={`challenge-card-image is-${challenge.image}`} style={{ backgroundImage: `linear-gradient(180deg, transparent 15%, #111c2e 100%), url(${IMAGES[challenge.image]})` }}><span className={`journey-status status-${status}`}>{status === "locked" && <Lock size={12} />}{STATUS_LABELS[status]}</span></div>
+    <div className="challenge-card-copy"><small>{challenge.kind === "mission" ? "HISTORY TIME TRAVELERS" : getUnit(challenge.unitId).title}</small><h3>{challenge.title}</h3><p>{challenge.description}</p><div><span><Clock size={15} />{challenge.duration}</span><ArrowRight size={21} /></div></div>
   </button>;
 }
 
@@ -32,9 +38,9 @@ function ChallengeHome({ state, dispatch }) {
   const [status, setStatus] = useState("all");
   const recommended = getRecommendation(state);
   const select = id => dispatch({ type: "SELECT_CHALLENGE", id });
-  const visible = CHALLENGES.filter(c => (era === "all" || c.unitId === era) && (skill === "all" || c.skillId === skill || c.questions?.some(q => q.skillId === skill)) && (status === "all" || challengeStatus(state, c.id) === status));
+  const visible = CHALLENGES.filter(c => (era === "all" || c.unitId === era) && (skill === "all" || c.skillId === skill || c.questions?.some(q => q.skillId === skill)) && (status === "all" || (challengeUnlocked(state, c) ? challengeStatus(state, c.id) : "locked") === status));
   return <>
-    <header className="journey-intro"><span className="journey-eyebrow">YOUR NEXT DISCOVERY</span><h1 tabIndex={-1}>Put your knowledge{" "}<br />to work.</h1><p>Follow your curiosity. Explore, connect, and make a case for history.</p></header>
+    <header className="journey-intro"><span className="journey-eyebrow">HISTORY TIME TRAVELERS</span><h1 tabIndex={-1}>Four missions.<br />One revolution.</h1><p>Recover hidden clues, build an archive of artifacts, and repair the timeline from 1765 to 1774.</p></header>
     <section className="challenge-feature" style={{ "--feature-image": `url(${IMAGES[recommended.challenge.image]})` }} aria-label="Recommended challenge">
       <div className="challenge-feature-copy"><span className="journey-eyebrow">{recommended.continuing ? "CONTINUE YOUR CHALLENGE" : "RECOMMENDED FOR YOU"}</span><h2>{recommended.challenge.title}</h2><p>{recommended.reason}</p><small>{getUnit(recommended.challenge.unitId).title} · {recommended.challenge.duration}</small><ActionButton onClick={() => { dispatch({ type: "START_CHALLENGE", id: recommended.challenge.id }); select(recommended.challenge.id); }}>{recommended.continuing ? "Continue challenge" : "Start challenge"}<ArrowRight size={18} /></ActionButton></div>
       <span className="challenge-feature-caption">Historical interpretation</span>
@@ -53,26 +59,65 @@ function ChallengeHome({ state, dispatch }) {
   </>;
 }
 
+function MissionInvestigation({ challenge: c, draft, completed, dispatch, review }) {
+  const collected = draft.collectedClueIds ?? [];
+  return <>
+    <section className="mission-brief journey-panel">
+      <div><span className="journey-eyebrow">MISSION FIELD NOTES</span><h2>Recover the hidden clues</h2><p>Open the linked historical record, inspect it, then return to add the clue to your case file.</p></div>
+      <strong>{collected.length} / {c.clues.length}</strong>
+    </section>
+    <div className="mission-clue-grid">{c.clues.map((clue, index) => {
+      const visited = draft.visitedClueIds?.includes(clue.id);
+      const found = collected.includes(clue.id);
+      const hintCount = draft.hints?.[clue.id] ?? 0;
+      return <article className={`journey-panel mission-clue ${found ? "is-found" : ""}`} key={clue.id}>
+        <header><span>CLUE {String(index + 1).padStart(2, "0")}</span>{found ? <CheckCircle size={24} weight="duotone" /> : <Target size={24} />}</header>
+        <h3>{found ? clue.title : "Hidden clue"}</h3>
+        <p>{found ? clue.reveal : clue.prompt}</p>
+        {!found && !completed && <>
+          {!draft.challengeMode && <div className="mission-hints">{clue.hints.slice(0, hintCount).map((hint, hintIndex) => <p key={hint}><Lightbulb size={15} />Hint {hintIndex + 1}: {hint}</p>)}<button type="button" disabled={hintCount >= clue.hints.length} onClick={() => dispatch({ type: "REQUEST_MISSION_HINT", id: c.id, clueId: clue.id })}><Lightbulb size={17} />{hintCount ? "Reveal next hint" : "Use a hint"}</button></div>}
+          <div className="mission-clue-actions"><ActionButton secondary onClick={() => { dispatch({ type: "VISIT_MISSION_CLUE", id: c.id, clueId: clue.id }); review(clue.target); }}><BookOpen size={17} />{visited ? "Review source" : "Investigate source"}</ActionButton><ActionButton disabled={!visited} onClick={() => dispatch({ type: "COLLECT_MISSION_CLUE", id: c.id, clueId: clue.id })}><Archive size={17} />Record clue</ActionButton></div>
+          {!visited && <small>Investigate the source before recording this clue.</small>}
+        </>}
+      </article>;
+    })}</div>
+    {completed && <section className="mission-artifact" aria-label="Collected archive artifact"><Archive size={36} weight="duotone" /><div><span>{c.artifact.label}</span><h2>{c.artifact.title}</h2><p>{c.artifact.summary}</p></div><CheckCircle size={27} weight="fill" /></section>}
+  </>;
+}
+
 function ChallengeDetail({ challenge: c, state, dispatch, onOpenContent, onProgress }) {
+  const [challengeMode, setChallengeMode] = useState(false);
   const draft = state.challenges[c.id];
   const status = draft?.status ?? "not-started";
+  const unlocked = challengeUnlocked(state, c);
   const completed = status === "complete";
   const lastAttempt = state.attempts.filter(a => a.source === c.id).at(-1);
-  const resultSummary = c.kind === "exploration" ? "Four clues found, with their historical context explored." : c.kind === "order" ? `${TIMELINE_EVENTS.filter((e, i) => draft?.order?.[i] === e.id).length} of 4 events correctly placed. The sequence counts as one practice question.` : `${draft?.lastResult?.correct ?? lastAttempt?.results.filter(r => r.correct).length ?? 0} of ${draft?.lastResult?.count ?? lastAttempt?.results.length ?? 0} correct. Review your explanations below.`;
+  const resultSummary = c.kind === "mission" ? `${c.clues.length} clues recovered and ${c.artifact.title} added to your archive.` : c.kind === "exploration" ? "Four clues found, with their historical context explored." : c.kind === "order" ? `${TIMELINE_EVENTS.filter((e, i) => draft?.order?.[i] === e.id).length} of 4 events correctly placed. The sequence counts as one practice question.` : `${draft?.lastResult?.correct ?? lastAttempt?.results.filter(r => r.correct).length ?? 0} of ${draft?.lastResult?.count ?? lastAttempt?.results.length ?? 0} correct. Review your explanations below.`;
   const steps = harborSteps(state);
-  const allReady = c.kind === "exploration" ? steps.every(s => s.found && s.understood) : c.kind === "order" || c.questions.every(q => draft?.answers[q.id]);
+  const allReady = c.kind === "mission" ? c.clues.every(clue => draft?.collectedClueIds?.includes(clue.id)) && c.questions.every(q => draft?.answers[q.id]) : c.kind === "exploration" ? steps.every(s => s.found && s.understood) : c.kind === "order" || c.questions.every(q => draft?.answers[q.id]);
   const review = target => onOpenContent({ unitId: c.unitId, ...target }, "challenges");
-  const start = retry => dispatch({ type: "START_CHALLENGE", id: c.id, retry });
+  const start = (retry, mode = false) => dispatch({ type: "START_CHALLENGE", id: c.id, retry, challengeMode: mode });
+  if (!unlocked) return <>
+    <button className="journey-back" type="button" onClick={() => dispatch({ type: "SELECT_CHALLENGE", id: null })}><ArrowLeft size={18} /> All challenges</button>
+    <header className="challenge-detail-header" style={{ "--feature-image": `url(${IMAGES[c.image]})` }}><div><span className="journey-eyebrow">HISTORY TIME TRAVELERS · FINALE</span><h1>{c.title}</h1><p>{c.description}</p><span className="journey-status status-locked"><Lock size={13} />Locked</span></div></header>
+    <section className="journey-panel challenge-start"><Lock size={32} /><h2>Complete the four event missions</h2><p>The timeline finale unlocks after all four archive artifacts have been recovered. Mission completion is counted once across retries.</p><ActionButton secondary onClick={() => dispatch({ type: "SELECT_CHALLENGE", id: null })}>View missions</ActionButton></section>
+  </>;
+  if (status === "not-started") return <>
+    <button className="journey-back" type="button" onClick={() => dispatch({ type: "SELECT_CHALLENGE", id: null })}><ArrowLeft size={18} /> All challenges</button>
+    <header className="challenge-detail-header" style={{ "--feature-image": `url(${IMAGES[c.image]})` }}><div><span className="journey-eyebrow">{c.kind === "mission" ? "HISTORY TIME TRAVELERS" : getUnit(c.unitId).title} · {c.duration}</span><h1>{c.title}</h1><p>{c.description}</p><span className="journey-status">Not started</span></div></header>
+    <section className="journey-panel challenge-start"><Target size={32} /><h2>{c.kind === "mission" ? "Enter the archive" : "Put your knowledge to work"}</h2><p>{c.kind === "mission" ? `Investigate ${c.clues.length} hidden clues, complete a short knowledge check, and recover the ${c.artifact.title}. Hints never reduce your learning score.` : "Your first answer is recorded for each question. Repeats never add duplicate achievements."}</p>{c.kind === "mission" && <label className="challenge-mode-toggle"><input type="checkbox" checked={challengeMode} onChange={event => setChallengeMode(event.target.checked)} /><span><strong>Challenge mode</strong><small>Hide all progressive hints for this attempt.</small></span></label>}<ActionButton onClick={() => start(false, challengeMode)}>Begin {c.kind === "mission" ? "mission" : "challenge"}<ArrowRight size={18} /></ActionButton></section>
+  </>;
   return <>
     <button className="journey-back" type="button" onClick={() => dispatch({ type: "SELECT_CHALLENGE", id: null })}><ArrowLeft size={18} /> All challenges</button>
     <header className="challenge-detail-header" style={{ "--feature-image": `url(${IMAGES[c.image]})` }}><div><span className="journey-eyebrow">{getUnit(c.unitId).title} · {c.duration}</span><h1>{c.title}</h1><p>{c.description}</p><span className={`journey-status status-${status}`}>{STATUS_LABELS[status]}</span></div></header>
     {status === "not-started" ? <section className="journey-panel challenge-start"><Target size={32} /><h2>{c.kind === "exploration" ? "Look closely. Find the connections." : "A little practice, a deeper understanding."}</h2><p>{c.kind === "exploration" ? "Find all four harbor objects and open “Why it matters” on each object’s card. Return here to complete your investigation." : "Your first answer is recorded for each question. Review the explanation, then try again whenever you like. Repeats never add duplicate achievements."}</p><ActionButton onClick={() => start(false)}>Begin challenge<ArrowRight size={18} /></ActionButton></section> : <>
       {completed && <section className="challenge-result" role="status"><CheckCircle size={36} weight="duotone" /><div><h2>{c.kind === "exploration" ? "Investigation complete" : "Practice complete"}</h2><p>{resultSummary}</p></div><ActionButton onClick={onProgress}>View my progress<ArrowRight size={17} /></ActionButton></section>}
+      {c.kind === "mission" && <MissionInvestigation challenge={c} draft={draft} completed={completed} dispatch={dispatch} review={review} />}
       {c.kind === "exploration" ? <section className="journey-panel harbor-checklist"><div className="journey-section-title"><h2>Your field notes</h2><strong>{steps.filter(s => s.found && s.understood).length} / 4</strong></div><p>Tap objects in the 3D harbor, then read “Why it matters”. Opening the scene alone does not count.</p><div className="harbor-check-grid">{steps.map(s => <div key={s.id}><span className={s.found && s.understood ? "is-done" : ""}><CheckCircle size={25} /></span><div><h3>{HARBOR_CLUES.find(c => c.id === s.id).shortLabel}</h3><small>{!s.found ? "Not discovered" : s.understood ? "Found · Context explored" : "Found · Read why it matters"}</small></div></div>)}</div><ActionButton onClick={() => review({ section: "harbor" })}><Compass size={18} />{steps.some(s => s.found) ? "Return to the harbor" : "Enter Boston Harbor"}</ActionButton></section> : c.kind === "order" ? <section className="journey-panel order-challenge"><h2>From earliest to latest</h2><p>Use the arrows to move each event. Dates are revealed after you check your sequence.</p><ol>{(draft.order ?? c.initialOrder).map((id, i) => { const e = TIMELINE_EVENTS.find(e => e.id === id); return <li key={id}><span className="order-index">{i + 1}</span><div><strong>{e.title}</strong>{completed && <small>{e.year} · {TIMELINE_EVENTS[i].id === id ? "Correct position" : `Correct position: ${TIMELINE_EVENTS.findIndex(e => e.id === id) + 1}`}</small>}</div><div className="order-controls"><button type="button" aria-label={`Move ${e.title} earlier`} disabled={completed || i === 0} onClick={() => dispatch({ type: "MOVE_EVENT", id: c.id, eventId: id, direction: -1 })}><ArrowUp size={19} /></button><button type="button" aria-label={`Move ${e.title} later`} disabled={completed || i === 3} onClick={() => dispatch({ type: "MOVE_EVENT", id: c.id, eventId: id, direction: 1 })}><ArrowDown size={19} /></button></div></li>; })}</ol>{completed && <div className="journey-feedback"><h3>The path through the archive</h3><p>{TIMELINE_EVENTS.map(e => `${e.year}: ${e.title}`).join(" → ")}</p></div>}<ActionButton secondary onClick={() => review({ section: "timeline" })}>Review the timeline<BookOpen size={18} /></ActionButton></section> : <div className="challenge-questions">{c.questions.map((q, index) => {
         const answer = draft.answers[q.id];
         return <section className="journey-panel challenge-question" key={q.id} aria-labelledby={`question-${q.id}`}><span className="journey-eyebrow">QUESTION {index + 1} / {c.questions.length}</span><h2 id={`question-${q.id}`}>{q.prompt}</h2><div className="challenge-options">{q.options.map(o => <button type="button" key={o.id} disabled={Boolean(answer) || completed} className={answer === o.id ? o.id === q.answerId ? "is-correct" : "is-incorrect" : ""} aria-pressed={answer === o.id} onClick={() => dispatch({ type: "ANSWER_CHALLENGE", id: c.id, questionId: q.id, answerId: o.id })}><span>{o.label}</span>{answer === o.id && (o.id === q.answerId ? <Check size={20} /> : <WarningCircle size={20} />)}</button>)}</div>{answer && <div className="journey-feedback" role="status"><strong>{answer === q.answerId ? "That’s right." : "A useful distinction."}</strong><p>{q.explanation}</p><button type="button" className="journey-text-link" onClick={() => review(q.target)}>Explore the source<ArrowRight size={16} /></button></div>}</section>;
       })}</div>}
-      <footer className="challenge-submit">{completed ? <ActionButton secondary onClick={() => start(true)}>Practice again</ActionButton> : <><p>{allReady ? "Ready to record this challenge." : c.kind === "exploration" ? "Explore all four clues and their context to finish." : "Answer every question to finish."}</p><ActionButton disabled={!allReady} onClick={() => dispatch({ type: "SUBMIT_CHALLENGE", id: c.id })}>{c.kind === "order" ? "Check my sequence" : "Complete challenge"}<CheckCircle size={18} /></ActionButton></>}</footer>
+      <footer className="challenge-submit">{completed ? <><ActionButton secondary onClick={() => start(true, false)}>Practice again</ActionButton>{c.kind === "mission" && <ActionButton secondary onClick={() => start(true, true)}>Replay without hints</ActionButton>}</> : <><p>{allReady ? "Ready to record this challenge." : c.kind === "mission" ? "Recover every clue and answer both questions to finish." : c.kind === "exploration" ? "Explore all four clues and their context to finish." : "Answer every question to finish."}</p><ActionButton disabled={!allReady} onClick={() => dispatch({ type: "SUBMIT_CHALLENGE", id: c.id })}>{c.kind === "order" ? "Check my sequence" : c.kind === "mission" ? "Recover artifact" : "Complete challenge"}<CheckCircle size={18} /></ActionButton></>}</footer>
     </>}
   </>;
 }
@@ -87,7 +132,8 @@ function ProgressView({ state, dispatch, onOpenContent, onChallenge }) {
   const achievements = [
     { title: "First steps", detail: "Explore your first historical record", earned: summaries.some(s => s.done > 0), Icon: Compass },
     { title: "Case closed", detail: "Complete your first challenge", earned: completed > 0, Icon: Medal },
-    { title: "Harbor investigator", detail: "Finish the four-clue investigation", earned: state.challenges["harbor-investigation"]?.everCompleted, Icon: Flag },
+    { title: "Time traveler", detail: "Recover all four American Revolution artifacts", earned: TIME_TRAVELER_MISSION_IDS.every(id => state.challenges[id]?.everCompleted), Icon: Flag },
+    { title: "Timeline repaired", detail: "Complete the four-event chronology finale", earned: state.challenges["order-events"]?.everCompleted, Icon: Clock },
     { title: "Archive explorer", detail: "Finish a unit’s exploration with a Memory Check score of at least 80%", earned: summaries.some(s => s.complete), Icon: BookOpen },
   ];
   return <>

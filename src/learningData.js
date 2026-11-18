@@ -1,6 +1,7 @@
 import { TIMELINE_EVENTS } from "./scanData.js";
 import { HARBOR_CLUES } from "./libraryData.js";
 import { REVOLUTION_EVIDENCE, REVOLUTION_PEOPLE } from "./revolutionData.js";
+import { TIME_TRAVELER_MISSIONS, TIME_TRAVELER_MISSION_IDS } from "./missionData.js";
 
 export const REVOLUTION_UNIT_ID = "american-revolution";
 export const LEARNING_CATALOG = [
@@ -18,8 +19,9 @@ export const LEARNING_SKILLS = [
 ];
 
 export const CHALLENGES = [
+  ...TIME_TRAVELER_MISSIONS.map(challenge => ({ ...challenge, unitId: REVOLUTION_UNIT_ID })),
+  { id: "order-events", unitId: REVOLUTION_UNIT_ID, title: "Finale: Repair the timeline", description: "Arrange the four mission events from resistance to collective action.", kind: "order", skillId: "chronology", duration: "2 min", image: "timeline", section: "timeline", prerequisiteIds: TIME_TRAVELER_MISSION_IDS, initialOrder: ["tea-party", "stamp-act", "congress", "massacre"] },
   { id: "harbor-investigation", unitId: REVOLUTION_UNIT_ID, title: "Investigate the harbor", description: "Find four objects. Uncover the history behind each one.", kind: "exploration", skillId: "exploration", duration: "5–8 min", image: "harbor", section: "explore" },
-  { id: "order-events", unitId: REVOLUTION_UNIT_ID, title: "A revolution in sequence", description: "Arrange four turning points, from resistance to collective action.", kind: "order", skillId: "chronology", duration: "2 min", image: "timeline", section: "timeline", initialOrder: ["tea-party", "stamp-act", "congress", "massacre"] },
   { id: "connect-people", unitId: REVOLUTION_UNIT_ID, title: "Whose side of the story?", description: "Connect people with their positions, allies, and responsibilities.", kind: "questions", skillId: "perspective", duration: "3 min", image: "people", section: "people", questions: [
     { id: "ally", skillId: "perspective", prompt: "Which merchant was a political ally of Samuel Adams?", options: [{ id: "hancock", label: "John Hancock" }, { id: "hutchinson", label: "Thomas Hutchinson" }, { id: "hewes", label: "George Hewes" }], answerId: "hancock", explanation: "Hancock connected merchant influence with Patriot political leadership and worked alongside Adams.", target: { section: "people", personId: "john-hancock" } },
     { id: "governor", skillId: "perspective", prompt: "Whose responsibility was to uphold royal authority in Massachusetts?", options: [{ id: "adams", label: "Samuel Adams" }, { id: "hutchinson", label: "Thomas Hutchinson" }, { id: "hancock", label: "John Hancock" }], answerId: "hutchinson", explanation: "As royal governor, Hutchinson defended imperial authority. His refusal to let the tea ships depart sharpened the dispute.", target: { section: "people", personId: "thomas-hutchinson" } },

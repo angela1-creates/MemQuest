@@ -1,7 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { CHALLENGES, LEARNING_CATALOG, REVOLUTION_UNIT_ID as unitId, getChallenge } from "../src/learningData.js";
-import { challengeStatus, getRecommendation, getUnitSummary, harborSteps, initialLearningState, learningReducer, loadLearningState, LEARNING_STORAGE_KEY, restoreLearningState, skillResults, unitLibrary } from "../src/learningState.js";
+import { challengeStatus, challengeUnlocked, getRecommendation, getUnitSummary, harborSteps, initialLearningState, learningReducer, loadLearningState, LEARNING_STORAGE_KEY, restoreLearningState, skillResults, unitLibrary } from "../src/learningState.js";
+import { TIME_TRAVELER_MISSION_IDS } from "../src/missionData.js";
 import { MEMORY_QUESTIONS, REVOLUTION_EVIDENCE, REVOLUTION_PEOPLE } from "../src/revolutionData.js";
 import { TIMELINE_EVENTS } from "../src/scanData.js";
 import { HARBOR_CLUES } from "../src/libraryData.js";
@@ -76,6 +77,37 @@ test("harbor challenge requires actual discoveries and each why-it-matters expan
   state = send(state, { type: "SUBMIT_CHALLENGE", id: "harbor-investigation" });
   assert.equal(challengeStatus(state, "harbor-investigation"), "complete");
   assert.equal(state.attempts[0].results.length, 0);
+});
+
+test("missions require source visits, collected clues, and both knowledge answers", () => {
+  const id = "mission-stamp-act";
+  const mission = getChallenge(id);
+  let state = send(initialLearningState, { type: "START_CHALLENGE", id });
+  const first = mission.clues[0];
+  assert.equal(send(state, { type: "COLLECT_MISSION_CLUE", id, clueId: first.id }), state, "a clue cannot be collected before its source is visited");
+  state = send(state, { type: "REQUEST_MISSION_HINT", id, clueId: first.id });
+  assert.equal(state.challenges[id].hints[first.id], 1);
+  for (const clue of mission.clues) {
+    state = send(state, { type: "VISIT_MISSION_CLUE", id, clueId: clue.id });
+    state = send(state, { type: "COLLECT_MISSION_CLUE", id, clueId: clue.id });
+  }
+  assert.equal(send(state, { type: "SUBMIT_CHALLENGE", id }), state, "clues alone cannot complete the mission");
+  for (const question of mission.questions) state = send(state, { type: "ANSWER_CHALLENGE", id, questionId: question.id, answerId: question.answerId });
+  state = send(state, { type: "SUBMIT_CHALLENGE", id });
+  assert.equal(challengeStatus(state, id), "complete");
+  assert.equal(state.challenges[id].everCompleted, true);
+  assert.equal(state.attempts.at(-1).results.length, 2);
+});
+
+test("challenge mode disables hints and the finale unlocks only after all mission artifacts", () => {
+  const id = "mission-boston-massacre";
+  let state = send(initialLearningState, { type: "START_CHALLENGE", id, challengeMode: true });
+  const clueId = getChallenge(id).clues[0].id;
+  assert.equal(send(state, { type: "REQUEST_MISSION_HINT", id, clueId }), state);
+  const finale = getChallenge("order-events");
+  assert.equal(challengeUnlocked(state, finale), false);
+  state = { ...state, challenges: { ...state.challenges, ...Object.fromEntries(TIME_TRAVELER_MISSION_IDS.map(missionId => [missionId, { status: "complete", everCompleted: true }])) } };
+  assert.equal(challengeUnlocked(state, finale), true);
 });
 test("chronology arrows reorder without duplication and score the actual submitted order", () => {
   let state = send(initialLearningState, { type: "START_CHALLENGE", id: "order-events" });
