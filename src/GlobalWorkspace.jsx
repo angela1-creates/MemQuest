@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Archive, ArrowDown, ArrowLeft, ArrowRight, ArrowUp, BookOpen, Check, CheckCircle, Clock, Compass, Flag, Lightbulb, Lock, Medal, Sparkle, Target, TrendUp, WarningCircle } from "@phosphor-icons/react";
+import { Archive, ArrowDown, ArrowLeft, ArrowRight, ArrowUp, BookOpen, Check, CheckCircle, Clock, Compass, Flag, House, Lightbulb, Lock, Medal, Sparkle, Target, TrendUp, WarningCircle } from "@phosphor-icons/react";
 import { CHALLENGES, LEARNING_CATALOG, LEARNING_SKILLS, REVOLUTION_UNIT_ID, getChallenge, getUnit } from "./learningData.js";
 import { challengeStatus, challengeUnlocked, getUnitSummary, harborSteps, skillResults, unitLibrary } from "./learningState.js";
 import { HARBOR_CLUES } from "./libraryData.js";
@@ -27,9 +27,9 @@ function ActionButton({ children, onClick, secondary = false, ...props }) {
 function ChallengeCard({ challenge, state, onSelect }) {
   const unlocked = challengeUnlocked(state, challenge);
   const status = unlocked ? challengeStatus(state, challenge.id) : "locked";
-  return <button type="button" className="challenge-card" onClick={() => onSelect(challenge.id)}>
+  return <button type="button" className="challenge-card" aria-label={`Open ${challenge.title}`} onClick={() => onSelect(challenge.id)}>
     <div className={`challenge-card-image is-${challenge.image}`} style={{ "--card-image": `url(${IMAGES[challenge.image]})` }}><span className={`journey-status status-${status}`}>{status === "locked" && <Lock size={12} />}{STATUS_LABELS[status]}</span></div>
-    <div className="challenge-card-copy"><small>{challenge.category === "event-file" ? "Quick Event File" : getUnit(challenge.unitId).title}</small><h3>{challenge.title}</h3><p>{challenge.description}</p><div><span><Clock size={15} />{challenge.duration}</span><span>Open</span></div></div>
+    <div className="challenge-card-copy"><small>{challenge.category === "event-file" ? "Event mission" : getUnit(challenge.unitId).title}</small><h3>{challenge.title}</h3><p>{challenge.description}</p><div><span><Clock size={15} />{challenge.duration}</span><span className="challenge-card-action">Open challenge <ArrowRight size={16} /></span></div></div>
   </button>;
 }
 
@@ -43,12 +43,16 @@ function ChallengeHome({ state, dispatch }) {
   const visible = CHALLENGES.filter(c => (era === "all" || c.unitId === era) && (skill === "all" || c.skillId === skill || c.questions?.some(q => q.skillId === skill)) && (status === "all" || (challengeUnlocked(state, c) ? challengeStatus(state, c.id) : "locked") === status));
   const quickFilesVisible = visible.filter(challenge => challenge.category === "event-file");
   const practiceVisible = visible.filter(challenge => !challenge.category);
+  const openFeatured = () => {
+    if (featuredStatus === "not-started") dispatch({ type: "START_CHALLENGE", id: featured.id });
+    select(featured.id);
+  };
   return <>
     <header className="journey-intro"><h1 tabIndex={-1}>History Time Travelers: investigate how cooperation intensified.</h1><p>Build one evidence-based explanation, then revisit individual events through optional quick files and practice.</p></header>
-    <section className="challenge-feature" style={{ "--feature-image": `url(${IMAGES[featured.image]})` }} aria-label="Featured investigation">
-      <div className="challenge-feature-copy"><h2>{featured.title}</h2><p>{featuredStatus === "in-progress" ? "Continue with your prediction, evidence, and causal explanation intact." : featuredStatus === "complete" ? "Review the evidence chain or try the optional AP-style response." : "Investigate why the Coercive Acts intensified cooperation that colonists had already begun building."}</p><small>Featured investigation<br />{getUnit(featured.unitId).title}<br />{featured.duration}</small><ActionButton onClick={() => { if (featuredStatus === "not-started") dispatch({ type: "START_CHALLENGE", id: featured.id }); select(featured.id); }}>{featuredStatus === "in-progress" ? "Continue investigation" : featuredStatus === "complete" ? "Review investigation" : "Start investigation"}</ActionButton></div>
+    <button type="button" className="challenge-feature challenge-feature-button" style={{ "--feature-image": `url(${IMAGES[featured.image]})` }} aria-label={`${featuredStatus === "in-progress" ? "Continue" : featuredStatus === "complete" ? "Review" : "Start"} ${featured.title}`} onClick={openFeatured}>
+      <div className="challenge-feature-copy"><h2>{featured.title}</h2><p>{featuredStatus === "in-progress" ? "Continue with your prediction, evidence, and causal explanation intact." : featuredStatus === "complete" ? "Review the evidence chain or try the optional AP-style response." : "Investigate why the Coercive Acts intensified cooperation that colonists had already begun building."}</p><small>Featured investigation<br />{getUnit(featured.unitId).title}<br />{featured.duration}</small><span className="journey-button challenge-feature-action">{featuredStatus === "in-progress" ? "Continue investigation" : featuredStatus === "complete" ? "Review investigation" : "Start investigation"}</span></div>
       <span className="challenge-feature-caption">Historical interpretation</span>
-    </section>
+    </button>
     <section className="challenge-catalog" aria-labelledby="all-challenges-title">
       <div className="journey-section-title"><div><h2 id="all-challenges-title">Find your next challenge</h2><p>One learning journey. Many ways to explore.</p></div><span>{visible.length} available</span></div>
       <div className="journey-filters">
@@ -56,8 +60,8 @@ function ChallengeHome({ state, dispatch }) {
         <label>Skill<select value={skill} onChange={e => setSkill(e.target.value)}><option value="all">All skills</option><option value="exploration">Exploration</option>{LEARNING_SKILLS.map(s => <option key={s.id} value={s.id}>{s.title}</option>)}</select></label>
         <label>Status<select value={status} onChange={e => setStatus(e.target.value)}><option value="all">All statuses</option>{Object.entries(STATUS_LABELS).map(([id, label]) => <option key={id} value={id}>{label}</option>)}</select></label>
       </div>
-      {quickFilesVisible.length > 0 && <div className="challenge-group"><div className="challenge-group-heading"><h2>Quick Event Files</h2><p>Optional 3-4 minute retrieval practice tied to each scan event.</p></div><div className="challenge-grid">{quickFilesVisible.map(c => <ChallengeCard key={c.id} challenge={c} state={state} onSelect={select} />)}</div></div>}
-      {practiceVisible.length > 0 && <div className="challenge-group"><div className="challenge-group-heading"><h2>Practice Lab</h2><p>Chronology, perspective, evidence, and exploration challenges.</p></div><div className="challenge-grid">{practiceVisible.map(c => <ChallengeCard key={c.id} challenge={c} state={state} onSelect={select} />)}</div></div>}
+      {practiceVisible.length > 0 && <div className="challenge-group"><div className="challenge-group-heading"><h2>Practice Lab</h2><p>The four original chronology, perspective, evidence, and exploration challenges.</p></div><div className="challenge-grid">{practiceVisible.map(c => <ChallengeCard key={c.id} challenge={c} state={state} onSelect={select} />)}</div></div>}
+      {quickFilesVisible.length > 0 && <div className="challenge-group"><div className="challenge-group-heading"><h2>Event missions</h2><p>Four optional Quick Event Files, one for each American Revolution event.</p></div><div className="challenge-grid">{quickFilesVisible.map(c => <ChallengeCard key={c.id} challenge={c} state={state} onSelect={select} />)}</div></div>}
       {!visible.length && <div className="journey-empty"><Compass size={28} /><h3>{era !== "all" && getUnit(era)?.status !== "available" ? "This era is still being prepared" : "No challenges match these filters"}</h3><p>Only published challenges are included in your progress.</p><ActionButton secondary onClick={() => { setEra("all"); setSkill("all"); setStatus("all"); }}>Show available challenges</ActionButton></div>}
     </section>
     <aside className="journey-future"><BookOpen size={27} /><div><h3>Across eras, beyond memorization.</h3><p>Cross-era challenges will arrive as more archives open. Ancient China, the Silk Road, and World War II are coming soon.</p></div><span>In development</span></aside>
@@ -91,8 +95,9 @@ function MissionInvestigation({ challenge: c, draft, completed, dispatch, review
       const visited = draft.visitedClueIds?.includes(clue.id);
       const found = collected.includes(clue.id);
       const hintCount = draft.hints?.[clue.id] ?? 0;
-      return <article className={`journey-panel mission-clue ${found ? "is-found" : ""}`} key={clue.id}>
-        <header><h3>{found ? clue.title : "Hidden clue"}</h3>{found ? <CheckCircle size={24} weight="duotone" /> : <Target size={24} />}</header>
+      return <article className={`journey-panel mission-clue ${visited ? "is-examined" : ""} ${found ? "is-found" : ""}`} key={clue.id}>
+        <div className="mission-clue-status"><span>Evidence file {String(c.clues.indexOf(clue) + 1).padStart(2, "0")}</span><small>{found ? "Collected" : visited ? "Examined" : "Unopened"}</small></div>
+        <header><h3>{found ? clue.title : "Hidden clue"}</h3>{found ? <CheckCircle size={24} weight="duotone" /> : visited ? <BookOpen size={24} /> : <Target size={24} />}</header>
         <p>{found ? clue.reveal : clue.prompt}</p>
         {!found && !completed && <>
           {!draft.challengeMode && <div className="mission-hints">{clue.hints.slice(0, hintCount).map((hint, hintIndex) => <p key={hint}><Lightbulb size={15} />Hint {hintIndex + 1}: {hint}</p>)}<button type="button" disabled={hintCount >= clue.hints.length} onClick={() => dispatch({ type: "REQUEST_MISSION_HINT", id: c.id, clueId: clue.id })}><Lightbulb size={17} />{hintCount ? "Reveal next hint" : "Use a hint"}</button></div>}
@@ -176,13 +181,13 @@ function ProgressView({ state, dispatch, onOpenContent, onChallenge }) {
   </>;
 }
 
-export function GlobalWorkspace({ tab, state, dispatch, onOpenContent, onChangeTab, storageAvailable }) {
+export function GlobalWorkspace({ tab, state, dispatch, onOpenContent, onChangeTab, storageAvailable, onHome }) {
   const rootRef = useRef(null);
   const selected = tab === "challenges" ? getChallenge(state.selectedChallengeId) : null;
   useEffect(() => { rootRef.current?.scrollTo({ top: 0 }); rootRef.current?.querySelector("h1")?.focus({ preventScroll: true }); }, [tab, selected?.id]);
   const openChallenge = id => { dispatch({ type: "SELECT_CHALLENGE", id }); onChangeTab("challenges"); };
   return <section className="global-workspace" ref={rootRef} aria-label={`${tab === "challenges" ? "Challenges" : "Progress"} across all eras`}>
-    <header className="journey-topbar"><div className="journey-brand"><span><Sparkle size={23} weight="fill" /></span><strong>MemQuest</strong></div><span className="journey-global-label">{tab === "challenges" ? <Medal size={18} /> : <TrendUp size={18} />}{tab === "challenges" ? "Challenges" : "Progress"}<small>All eras</small></span><span className="journey-save-status">{storageAvailable ? "Saved on this device" : "Session only: storage unavailable"}</span></header>
+    <header className="journey-topbar"><button type="button" className="journey-brand workspace-brand-home" onClick={onHome}><span><Sparkle size={23} weight="fill" /></span><div className="workspace-brand-copy"><strong>MemQuest</strong><small><House size={13} /> Home</small></div></button><span className="journey-global-label">{tab === "challenges" ? <Medal size={18} /> : <TrendUp size={18} />}{tab === "challenges" ? "Challenges" : "Progress"}<small>All eras</small></span><span className="journey-save-status">{storageAvailable ? "Saved on this device" : "Session only: storage unavailable"}</span></header>
     <div className="journey-content">{tab === "progress" ? <ProgressView state={state} dispatch={dispatch} onOpenContent={onOpenContent} onChallenge={openChallenge} /> : selected ? <ChallengeDetail challenge={selected} state={state} dispatch={dispatch} onOpenContent={onOpenContent} onProgress={() => onChangeTab("progress")} /> : <ChallengeHome state={state} dispatch={dispatch} />}</div>
   </section>;
 }

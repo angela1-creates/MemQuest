@@ -1,7 +1,6 @@
 import { useEffect } from "react";
 import {
   ArrowLeft,
-  Bell,
   BookOpen,
   CalendarBlank,
   ChartLineUp,
@@ -9,8 +8,10 @@ import {
   Compass,
   FolderOpen,
   Headset,
+  House,
   LockSimple,
   MapTrifold,
+  Medal,
   Sparkle,
   UsersThree,
 } from "@phosphor-icons/react";
@@ -28,21 +29,19 @@ const SECTION_ICONS = {
   memory: CheckSquare,
 };
 
-function EraCard({ era, onOpen, onUnavailable }) {
+function EraCard({ era, onOpen, onFeaturedInvestigation }) {
   const active = era.status === "active";
   const locked = era.status === "locked";
   return (
     <article
       className={`library-era-card ${active ? "is-active" : "is-preview"} ${locked ? "is-locked" : ""}`}
-      onClick={active ? onOpen : undefined}
     >
       <div className="library-era-title-row">
         <h2>{era.title}</h2>
         {active && <span className="library-era-orbit"><Compass size={24} weight="duotone" /></span>}
         {locked && <LockSimple size={18} weight="fill" aria-label="Locked" />}
       </div>
-      <p>{era.dates}</p>
-      {era.subtitle && <strong className="library-era-subtitle">{era.subtitle}</strong>}
+      <p className="library-era-meta">{era.previewLabel && <span>{era.previewLabel}</span>}<span>{era.dates}</span></p>
       {era.description && <small>{era.description}</small>}
       {active && <div className="library-era-progress">
         <div><span>Exploration</span><strong>{era.progress}%</strong></div>
@@ -50,8 +49,8 @@ function EraCard({ era, onOpen, onUnavailable }) {
       </div>}
       {active ? (
         <div className="library-era-actions">
-          <button type="button" onClick={onOpen}><Headset size={23} weight="duotone" /> Explore unit</button>
-          <button type="button" className="library-icon-button" onClick={onOpen} aria-label="Open American Revolution overview"><Compass size={22} /></button>
+          <button type="button" className="library-unit-action" onClick={onOpen}><Headset size={22} weight="duotone" /><span><strong>Explore unit</strong><small>Harbor &amp; archive</small></span></button>
+          <button type="button" className="library-mission-action" onClick={onFeaturedInvestigation}><Medal size={22} weight="duotone" /><span><strong>Play 1774 challenge</strong><small>10-12 min</small></span></button>
         </div>
       ) : (
         <span className="library-era-preview">Prospective investigation</span>
@@ -60,11 +59,11 @@ function EraCard({ era, onOpen, onUnavailable }) {
   );
 }
 
-function LibraryHome({ dispatch, onUnavailable, progress, onProfile }) {
+function LibraryHome({ dispatch, progress, onProfile, onFeaturedInvestigation, onHome }) {
   return (
     <section className="library-page library-home" aria-labelledby="library-home-title">
       <header className="library-page-header">
-        <div className="library-title-pill"><BookOpen size={23} weight="duotone" /><span>Library</span></div>
+        <div className="library-header-leading"><button type="button" className="workspace-home-button" onClick={onHome}><House size={18} /> Home</button><div className="library-title-pill"><BookOpen size={23} weight="duotone" /><span>Library</span></div></div>
         <button type="button" aria-label="Open learning progress" onClick={onProfile}><Sparkle size={20} weight="duotone" /></button>
       </header>
 
@@ -81,7 +80,7 @@ function LibraryHome({ dispatch, onUnavailable, progress, onProfile }) {
               key={era.id}
               era={era.id === "american-revolution" ? { ...era, progress } : era}
               onOpen={() => dispatch({ type: "OPEN_ERA", eraId: era.id })}
-              onUnavailable={() => onUnavailable(`${era.title} is the next prospective investigation after the American Revolution pilot is validated`)}
+              onFeaturedInvestigation={onFeaturedInvestigation}
             />
           ))}
         </div>
@@ -111,7 +110,7 @@ function UnitNavigation({ activeSection, dispatch, className = "" }) {
   );
 }
 
-function RevolutionOverview({ state, dispatch }) {
+function RevolutionOverview({ state, dispatch, onFeaturedInvestigation, onHome }) {
   const activeSection = state.activeSection ?? "explore";
   const progress = calculateUnitProgress(state);
   const remainingClues = Math.max(0, 4 - state.discoveredClueIds.length);
@@ -119,7 +118,7 @@ function RevolutionOverview({ state, dispatch }) {
   return (
     <section className="revolution-overview" aria-labelledby="revolution-title">
       <aside className="revolution-sidebar">
-        <div className="revolution-brand"><span><Sparkle size={19} weight="fill" /></span><strong>MemQuest</strong></div>
+        <button type="button" className="revolution-brand workspace-brand-home" onClick={onHome}><span><Sparkle size={19} weight="fill" /></span><div className="workspace-brand-copy"><strong>MemQuest</strong><small><House size={13} /> Home</small></div></button>
         <button type="button" className="revolution-back" onClick={() => dispatch({ type: "BACK_HOME" })}><ArrowLeft size={18} /> All eras</button>
         <UnitNavigation activeSection={activeSection} dispatch={dispatch} />
         <div className="revolution-sidebar-progress"><span>UNIT EXPLORATION: {progress}%</span><div><i style={{ width: `${progress}%` }} /></div></div>
@@ -129,7 +128,7 @@ function RevolutionOverview({ state, dispatch }) {
         <header className="revolution-mobile-header">
           <button type="button" onClick={() => dispatch({ type: "BACK_HOME" })}><ArrowLeft size={18} /> Library</button>
           <span>{REVOLUTION_SECTIONS.find((section) => section.id === activeSection)?.label ?? "American Revolution"}</span>
-          <Bell size={19} />
+          <button type="button" onClick={onHome}><House size={17} /> Home</button>
         </header>
         <UnitNavigation activeSection={activeSection} dispatch={dispatch} className="revolution-mobile-tabs" />
 
@@ -141,7 +140,7 @@ function RevolutionOverview({ state, dispatch }) {
                 <span><MapTrifold size={26} weight="duotone" /></span>
                 <div><small>AMERICAN REVOLUTION</small><h1 id="revolution-title">The road to independence</h1></div>
               </div>
-              <div className="revolution-era-meta"><small>UNIT WINDOW</small><strong>1765 - 1783</strong></div>
+              <div className="revolution-era-meta"><small>UNIT WINDOW</small><strong>1765 - 1783</strong><button type="button" className="revolution-featured-investigation" onClick={onFeaturedInvestigation}><Medal size={17} /> Featured game <span>10-12 min</span></button></div>
             </header>
 
             <button type="button" className="revolution-explore-card glass-surface" onClick={() => dispatch({ type: "ENTER_HARBOR" })}>
@@ -175,7 +174,7 @@ function RevolutionOverview({ state, dispatch }) {
   );
 }
 
-export function LibraryExperience({ state, dispatch, onUnavailable, onProfile }) {
+export function LibraryExperience({ state, dispatch, onUnavailable, onProfile, onFeaturedInvestigation, onHome }) {
   useEffect(() => {
     if (state.stage !== LIBRARY_STAGES.OVERVIEW) return;
     if (state.activeSection === "timeline") dispatch({ type: "SELECT_TIMELINE_EVENT", eventId: state.selectedTimelineEventId });
@@ -196,7 +195,7 @@ export function LibraryExperience({ state, dispatch, onUnavailable, onProfile })
     );
   }
   if (state.stage === LIBRARY_STAGES.OVERVIEW) {
-    return <RevolutionOverview state={state} dispatch={dispatch} />;
+    return <RevolutionOverview state={state} dispatch={dispatch} onFeaturedInvestigation={onFeaturedInvestigation} onHome={onHome} />;
   }
-  return <LibraryHome dispatch={dispatch} onUnavailable={onUnavailable} progress={progress} onProfile={onProfile} />;
+  return <LibraryHome dispatch={dispatch} onUnavailable={onUnavailable} progress={progress} onProfile={onProfile} onFeaturedInvestigation={onFeaturedInvestigation} onHome={onHome} />;
 }

@@ -1,0 +1,86 @@
+/* Hallmark · checked: 2026-11-19 · genre: editorial (inferred)
+ * floor: explicit return navigation · structural: four learning tabs stay intact, Home lives in workspace chrome
+ * built: the project · redesign: polish · v2.0.0 */
+
+.workspace-brand-home {
+  padding: 0;
+  color: inherit;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  text-align: left;
+}
+
+.workspace-brand-copy {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+
+.workspace-brand-copy small {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--mq-muted);
+  font: 600 11px/1.2 var(--mq-ui);
+}
+
+.library-header-leading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.workspace-home-button {
+  display: inline-flex;
+  min-height: 46px;
+  align-items: center;
+  gap: 8px;
+  padding: 0 16px;
+  color: var(--mq-text);
+  background: var(--mq-surface);
+  border: 1px solid var(--mq-border);
+  border-radius: var(--mq-control-radius);
+  font: 650 13px/1 var(--mq-ui);
+  cursor: pointer;
+}
+
+.workspace-brand-home,
+.workspace-home-button {
+  transition: color 160ms ease, border-color 160ms ease, transform 160ms ease;
+}
+
+.workspace-brand-home:focus-visible,
+.workspace-home-button:focus-visible {
+  outline: 2px solid var(--mq-gold);
+  outline-offset: 4px;
+}
+
+.workspace-brand-home:active,
+.workspace-home-button:active {
+  transform: translateY(1px);
+}
+
+.revolution-brand.workspace-brand-home {
+  width: auto;
+}
+
+@media (hover: hover) {
+  .workspace-brand-home:hover,
+  .workspace-home-button:hover {
+    color: var(--mq-gold);
+    border-color: var(--mq-gold);
+  }
+}
+
+@media (max-width: 560px) {
+  .library-header-leading { gap: 8px; }
+  .workspace-home-button { min-height: 42px; padding: 0 12px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .workspace-brand-home,
+  .workspace-home-button { transition: none; }
+  .workspace-brand-home:active,
+  .workspace-home-button:active { transform: none; }
+}

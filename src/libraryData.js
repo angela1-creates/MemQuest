@@ -8,8 +8,8 @@ export const LIBRARY_ERAS = Object.freeze([
   },
   {
     id: "silk-road",
-    title: "Up Next: Silk Roads",
-    subtitle: "Networks of Exchange",
+    title: "Silk Roads: Networks of Exchange",
+    previewLabel: "Up next",
     dates: "c. 1200-1450 CE",
     status: "preview",
     description: "Explore how trade, ideas, and technologies connected civilizations across Eurasia.",

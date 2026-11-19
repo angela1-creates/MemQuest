@@ -48,6 +48,10 @@ html, body { overflow-x: clip; }
 .challenge-card-image { background-image: linear-gradient(180deg, transparent 15%, var(--htt-surface) 100%), var(--card-image); }
 .challenge-card-copy > small { letter-spacing: 0; text-transform: none; }
 .challenge-card-copy > div > span:last-child { color: var(--htt-muted); }
+.challenge-feature-button { width: 100%; padding: 0; color: var(--htt-text); text-align: left; cursor: pointer; }
+.challenge-feature-button:focus-visible { outline: 2px solid var(--htt-gold); outline-offset: 4px; }
+.challenge-feature-button:hover { border-color: var(--htt-gold); }
+.challenge-feature-action { margin-top: var(--htt-space-5); pointer-events: none; }
 
 .mission-prior-context { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--htt-space-4); margin-bottom: var(--htt-space-5); padding: var(--htt-space-5) 0; border-top: 1px solid var(--htt-border-strong); border-bottom: 1px solid var(--htt-border); }
 .mission-prior-context > svg { color: var(--htt-gold); }
@@ -69,12 +73,16 @@ html, body { overflow-x: clip; }
 .mission-brief > strong { color: var(--htt-gold); font: 30px var(--htt-font-editorial); white-space: nowrap; }
 .mission-clue-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--htt-space-4); margin-bottom: var(--htt-space-6); }
 .mission-clue { display: flex; min-height: 310px; flex-direction: column; }
+.mission-clue-status { display: flex; align-items: center; justify-content: space-between; gap: var(--htt-space-3); margin-bottom: var(--htt-space-4); padding-bottom: var(--htt-space-3); border-bottom: 1px solid var(--htt-border); font-size: 11px; }
+.mission-clue-status span { color: var(--htt-gold); font-weight: 650; }
+.mission-clue-status small { color: var(--htt-faint); }
 .mission-clue header { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--htt-space-3); }
 .mission-clue header svg { flex: 0 0 auto; color: var(--htt-faint); }
 .mission-clue h3 { font: 25px/1.15 var(--htt-font-editorial); }
 .mission-clue > p { margin-top: var(--htt-space-2); font-size: 13px; }
 .mission-clue > small { margin-top: var(--htt-space-2); color: var(--htt-faint); font-size: 11px; }
 .mission-clue.is-found { border-color: var(--htt-success); background: var(--htt-surface-success); }
+.mission-clue.is-examined:not(.is-found) { border-color: var(--htt-border-strong); background: var(--htt-surface-raised); }
 .mission-clue.is-found header svg { color: var(--htt-success); }
 .mission-hints { display: grid; gap: var(--htt-space-2); margin-top: var(--htt-space-4); }
 .mission-hints p { display: flex; align-items: flex-start; gap: var(--htt-space-2); padding: var(--htt-space-2) var(--htt-space-3); border-left: 2px solid var(--htt-gold); color: var(--htt-muted); font-size: 11px; }
