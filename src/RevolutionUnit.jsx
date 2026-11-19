@@ -92,9 +92,9 @@ const SECTION_META = Object.freeze({
     Icon: FolderOpen,
   },
   memory: {
-    kicker: "MEMORY CHECK / UNIT SYNTHESIS",
+    kicker: "UNIT REVIEW / SYNTHESIS",
     title: "Reconstruct the Argument",
-    description: "Use chronology, perspective, and evidence to explain why resistance escalated.",
+    description: "Complete a five-question end-of-unit assessment using chronology, perspective, and evidence.",
     Icon: CheckSquare,
   },
 });
@@ -302,16 +302,20 @@ function EvidenceView({ state, dispatch, onEnterHarbor }) {
         trailing={<span className="unit-count-pill"><FolderOpen size={17} /> {state.reviewedEvidenceIds.length} / {REVOLUTION_EVIDENCE.length} reviewed</span>}
       />
 
-      <div className="unit-evidence-filters" aria-label="Evidence types">
-        {types.map((type) => (
-          <button type="button" key={type} className={state.evidenceFilter === type ? "is-active" : ""} onClick={() => dispatch({ type: "SET_EVIDENCE_FILTER", filter: type })}>
-            {type === "all" ? "All evidence" : type}
-          </button>
-        ))}
+      <div className="unit-evidence-toolbar">
+        <div><h2>Source archive</h2><p>Select a source to examine what it supports, what it cannot prove, and who it connects to.</p></div>
+        <div className="unit-evidence-filters" aria-label="Evidence types">
+          {types.map((type) => (
+            <button type="button" key={type} className={state.evidenceFilter === type ? "is-active" : ""} onClick={() => dispatch({ type: "SET_EVIDENCE_FILTER", filter: type })}>
+              {type === "all" ? "All evidence" : type}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="unit-evidence-layout">
-        <div className="unit-evidence-grid">
+        <section className="unit-evidence-catalog" aria-label="Available historical sources">
+          <div className="unit-evidence-grid">
           {visibleEvidence.map((evidence) => {
             const unlocked = !evidence.clueId || state.discoveredClueIds.includes(evidence.clueId);
             return (
@@ -330,7 +334,8 @@ function EvidenceView({ state, dispatch, onEnterHarbor }) {
               </button>
             );
           })}
-        </div>
+          </div>
+        </section>
 
         <article className="unit-evidence-detail glass-surface">
           {selectedUnlocked ? (
@@ -343,18 +348,19 @@ function EvidenceView({ state, dispatch, onEnterHarbor }) {
                   decoding="async"
                 />
               </div>
+              <small className="unit-evidence-selection-label">Selected source</small>
               <span className="unit-detail-badge"><FolderOpen size={17} /> {selectedEvidence.sourceType}</span>
               <h2>{selectedEvidence.title}</h2>
               <p className="unit-detail-date">{selectedEvidence.date}</p>
               <p>{selectedEvidence.summary}</p>
               <div className="unit-source-analysis">
-                <div><small>WHAT IT SHOWS</small><p>{selectedEvidence.shows}</p></div>
-                <div><small>LIMITATION</small><p>{selectedEvidence.limitation}</p></div>
+                <div><small>What it shows</small><p>{selectedEvidence.shows}</p></div>
+                <div><small>Limitation</small><p>{selectedEvidence.limitation}</p></div>
               </div>
-              <blockquote><small>SUPPORTED CLAIM</small>{selectedEvidence.claim}</blockquote>
+              <blockquote><small>Supported claim</small>{selectedEvidence.claim}</blockquote>
               <div className="unit-link-groups">
                 {selectedEvidence.sourceUrl && <a className="unit-text-link" href={selectedEvidence.sourceUrl} target="_blank" rel="noreferrer">Read the archival source <ArrowRight size={15} /></a>}
-                <div><small>RELATED PEOPLE</small>{selectedEvidence.personIds.map((id) => { const person = REVOLUTION_PEOPLE.find((item) => item.id === id); return <button type="button" key={id} onClick={() => openPerson(id)}>{person.name}</button>; })}</div>
+                <div><small>Related people</small>{selectedEvidence.personIds.map((id) => { const person = REVOLUTION_PEOPLE.find((item) => item.id === id); return <button type="button" key={id} onClick={() => openPerson(id)}>{person.name}</button>; })}</div>
               </div>
             </>
           ) : (
@@ -401,13 +407,13 @@ function MemoryCheckView({ state, dispatch }) {
             <span className="unit-memory-seal"><CheckSquare size={52} weight="duotone" /></span>
           </div>
           <div>
-            <small>ARCHIVE REVIEW READY</small>
+            <small>Unit assessment ready</small>
             <h2>Can you reconstruct the road to revolution?</h2>
-            <p>Five short questions combine chronology, people, evidence, and historical explanation. Every answer includes a review path, with no penalty for retrying.</p>
+            <p>This five-question Unit Review checks the learning unit. Challenges are separate reusable missions and practice activities.</p>
             <div className="unit-memory-dimensions">
               {["Chronology", "Perspectives", "Evidence", "Cause & Effect"].map((label) => <span key={label}><CheckCircle size={16} weight="duotone" />{label}</span>)}
             </div>
-            <button type="button" className="unit-primary-button" onClick={() => dispatch({ type: "START_MEMORY" })}>Begin Memory Check <ArrowRight size={18} /></button>
+            <button type="button" className="unit-primary-button" onClick={() => dispatch({ type: "START_MEMORY" })}>Begin Unit Review <ArrowRight size={18} /></button>
           </div>
         </div>
       </section>
@@ -422,10 +428,10 @@ function MemoryCheckView({ state, dispatch }) {
         <div className="unit-memory-result glass-surface">
           <div className="unit-memory-art is-result">
             <img src={bostonTeaPartyImage} alt="Illustrated Boston Tea Party scene" decoding="async" />
-            <div className={`unit-score-ring ${passed ? "is-mastered" : ""}`}><strong>{memory.score}%</strong><small>THIS CHECK</small></div>
+            <div className={`unit-score-ring ${passed ? "is-mastered" : ""}`}><strong>{memory.score}%</strong><small>This review</small></div>
           </div>
           <div>
-            <small>MEMORY CHECK COMPLETE</small>
+            <small>Unit Review complete</small>
             <h2>{passed ? "Connections made." : "Keep exploring the connections."}</h2>
             <p>{passed ? "You answered at least four of these five questions correctly. This practice result is one part of your learning journey, not a measure of overall mastery." : "Review the missed connections, then try again when the evidence feels clearer."}</p>
             <div className="unit-result-breakdown">

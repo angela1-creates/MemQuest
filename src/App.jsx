@@ -26,7 +26,6 @@ import {
 import { GlobalWorkspace } from "./GlobalWorkspace.jsx";
 import { LEARNING_STORAGE_KEY, learningReducer, loadLearningState, restoreLearningState, unitLibrary } from "./learningState.js";
 import { REVOLUTION_UNIT_ID, getChallenge } from "./learningData.js";
-import { PILOT_MISSION_ID } from "./missionData.js";
 
 const instructions = [
   {
@@ -217,15 +216,11 @@ export function App({
     setActiveTab("library");
   };
 
-  const openFeaturedInvestigation = () => {
+  const openAmericanRevolutionChallenges = () => {
     setReturnTarget(null);
     scanStartRef.current += 1;
     controllerRef.current?.stopExperience();
-    if (!learningState.challenges[PILOT_MISSION_ID]) {
-      dispatchGlobal({ type: "START_CHALLENGE", id: PILOT_MISSION_ID });
-    } else {
-      dispatchGlobal({ type: "SELECT_CHALLENGE", id: PILOT_MISSION_ID });
-    }
+    dispatchGlobal({ type: "SELECT_CHALLENGE", id: null });
     setActiveTab("challenges");
   };
 
@@ -319,7 +314,7 @@ export function App({
             dispatch={dispatchLibrary}
             onUnavailable={announce}
             onProfile={() => handleTabChange({ id: "progress", label: "Progress" })}
-            onFeaturedInvestigation={openFeaturedInvestigation}
+            onChallenges={openAmericanRevolutionChallenges}
             onHome={goHome}
           />
           {libraryState.stage === LIBRARY_STAGES.HOME && (

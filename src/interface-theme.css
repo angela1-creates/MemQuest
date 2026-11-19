@@ -172,6 +172,25 @@ button:focus-visible, select:focus-visible, summary:focus-visible, a:focus-visib
 .unit-timeline-card > .unit-timeline-date { color: var(--mq-gold); border-radius: 10px; }
 .timeline-event-detail { padding: 16px; }
 .unit-detail-copy p { color: var(--mq-muted); line-height: 1.65; }
+.unit-evidence-toolbar {
+  display: flex; width: min(100%, 1180px); align-items: flex-end; justify-content: space-between;
+  gap: 24px; margin: 8px auto 24px; padding-bottom: 20px; border-bottom: 1px solid var(--mq-border);
+}
+.unit-evidence-toolbar > div:first-child { display: grid; max-width: 56ch; gap: 8px; }
+.unit-evidence-toolbar h2 { color: var(--mq-text); font: 550 1.35rem/1.3 var(--mq-ui); }
+.unit-evidence-toolbar p { color: var(--mq-muted); font-size: 13px; line-height: 1.6; }
+.unit-evidence-toolbar .unit-evidence-filters { width: auto; margin: 0; flex: 0 0 auto; }
+.evidence-unit-view .unit-evidence-layout { grid-template-columns: minmax(0, .92fr) minmax(0, 1.08fr); gap: 24px; width: min(100%, 1180px); align-items: start; }
+.unit-evidence-catalog { min-width: 0; }
+.evidence-unit-view .unit-evidence-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.evidence-unit-view .unit-evidence-grid > button { min-height: 184px; padding: 96px 16px 16px; }
+.evidence-unit-view .unit-evidence-detail { position: sticky; top: 24px; min-height: 0; padding: 28px; }
+.evidence-unit-view .unit-evidence-detail-media { height: 190px; margin: -28px -28px 24px; }
+.unit-evidence-selection-label { display: block; margin-bottom: 8px; color: var(--mq-gold); font: 650 11px/1.4 var(--mq-ui); }
+.evidence-unit-view .unit-source-analysis { gap: 16px; margin-top: 24px; }
+.evidence-unit-view .unit-source-analysis > div { padding: 16px; }
+.evidence-unit-view .unit-evidence-detail blockquote { margin-top: 24px; padding: 16px 18px; line-height: 1.55; }
+.evidence-unit-view .unit-link-groups { gap: 16px 24px; margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--mq-border); }
 .unit-view.people-dossier { background: #0a1426; }
 .people-panel { background: rgba(18, 31, 48, .8); }
 .people-panel h2 { font: 550 clamp(1.15rem, 1.65vw, 1.55rem)/1.3 var(--mq-ui); }
@@ -205,6 +224,10 @@ button:focus-visible, select:focus-visible, summary:focus-visible, a:focus-visib
   .library-era-card { min-height: 300px; padding: 22px; }
   .library-era-grid { gap: 14px; margin-top: 24px; }
   .unit-section-title p { font-size: .8rem; }
+  .unit-evidence-toolbar { align-items: flex-start; flex-direction: column; gap: 16px; }
+  .unit-evidence-toolbar .unit-evidence-filters { width: 100%; }
+  .evidence-unit-view .unit-evidence-layout { grid-template-columns: 1fr; gap: 20px; }
+  .evidence-unit-view .unit-evidence-detail { position: static; }
 }
 @media (max-width: 560px) {
   .scan-bottom-nav { border-radius: 20px; }

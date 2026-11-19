@@ -10,7 +10,6 @@ import {
   Headset,
   House,
   LockSimple,
-  MapTrifold,
   Medal,
   Sparkle,
   UsersThree,
@@ -29,13 +28,14 @@ const SECTION_ICONS = {
   memory: CheckSquare,
 };
 
-function EraCard({ era, onOpen, onFeaturedInvestigation }) {
+function EraCard({ era, onOpen, onChallenges }) {
   const active = era.status === "active";
   const locked = era.status === "locked";
   return (
     <article
       className={`library-era-card ${active ? "is-active" : "is-preview"} ${locked ? "is-locked" : ""}`}
     >
+      {active && <button type="button" className="library-era-open" onClick={onOpen} aria-label="Open the American Revolution learning unit" />}
       <div className="library-era-title-row">
         <h2>{era.title}</h2>
         {active && <span className="library-era-orbit"><Compass size={24} weight="duotone" /></span>}
@@ -49,8 +49,8 @@ function EraCard({ era, onOpen, onFeaturedInvestigation }) {
       </div>}
       {active ? (
         <div className="library-era-actions">
-          <button type="button" className="library-unit-action" onClick={onOpen}><Headset size={22} weight="duotone" /><span><strong>Explore unit</strong><small>Harbor &amp; archive</small></span></button>
-          <button type="button" className="library-mission-action" onClick={onFeaturedInvestigation}><Medal size={22} weight="duotone" /><span><strong>Play 1774 challenge</strong><small>10-12 min</small></span></button>
+          <button type="button" className="library-unit-action" onClick={onOpen}><Headset size={22} weight="duotone" /><span><strong>Open Revolution unit</strong><small>WebXR, people &amp; sources</small></span></button>
+          <button type="button" className="library-mission-action" onClick={onChallenges}><Medal size={22} weight="duotone" /><span><strong>Open challenges</strong><small>Missions &amp; practice</small></span></button>
         </div>
       ) : (
         <span className="library-era-preview">Prospective investigation</span>
@@ -59,7 +59,7 @@ function EraCard({ era, onOpen, onFeaturedInvestigation }) {
   );
 }
 
-function LibraryHome({ dispatch, progress, onProfile, onFeaturedInvestigation, onHome }) {
+function LibraryHome({ dispatch, progress, onProfile, onChallenges, onHome }) {
   return (
     <section className="library-page library-home" aria-labelledby="library-home-title">
       <header className="library-page-header">
@@ -80,7 +80,7 @@ function LibraryHome({ dispatch, progress, onProfile, onFeaturedInvestigation, o
               key={era.id}
               era={era.id === "american-revolution" ? { ...era, progress } : era}
               onOpen={() => dispatch({ type: "OPEN_ERA", eraId: era.id })}
-              onFeaturedInvestigation={onFeaturedInvestigation}
+              onChallenges={onChallenges}
             />
           ))}
         </div>
@@ -110,13 +110,13 @@ function UnitNavigation({ activeSection, dispatch, className = "" }) {
   );
 }
 
-function RevolutionOverview({ state, dispatch, onFeaturedInvestigation, onHome }) {
+function RevolutionOverview({ state, dispatch, onHome }) {
   const activeSection = state.activeSection ?? "explore";
   const progress = calculateUnitProgress(state);
   const remainingClues = Math.max(0, 4 - state.discoveredClueIds.length);
 
   return (
-    <section className="revolution-overview" aria-labelledby="revolution-title">
+    <section className="revolution-overview" aria-label="American Revolution unit">
       <aside className="revolution-sidebar">
         <button type="button" className="revolution-brand workspace-brand-home" onClick={onHome}><span><Sparkle size={19} weight="fill" /></span><div className="workspace-brand-copy"><strong>MemQuest</strong><small><House size={13} /> Home</small></div></button>
         <button type="button" className="revolution-back" onClick={() => dispatch({ type: "BACK_HOME" })}><ArrowLeft size={18} /> All eras</button>
@@ -135,20 +135,12 @@ function RevolutionOverview({ state, dispatch, onFeaturedInvestigation, onHome }
         {activeSection === "explore" ? (
           <>
             <div className="revolution-stage-scrim" aria-hidden="true" />
-            <header className="revolution-title-card glass-surface">
-              <div className="revolution-title-heading">
-                <span><MapTrifold size={26} weight="duotone" /></span>
-                <div><small>AMERICAN REVOLUTION</small><h1 id="revolution-title">The road to independence</h1></div>
-              </div>
-              <div className="revolution-era-meta"><small>UNIT WINDOW</small><strong>1765 - 1783</strong><button type="button" className="revolution-featured-investigation" onClick={onFeaturedInvestigation}><Medal size={17} /> Featured game <span>10-12 min</span></button></div>
-            </header>
-
             <button type="button" className="revolution-explore-card glass-surface" onClick={() => dispatch({ type: "ENTER_HARBOR" })}>
               <span className="revolution-location-dot" aria-hidden="true" />
-              <small>BOSTON HARBOR / DECEMBER 1773</small>
-              <strong>Explore Boston Harbor</strong>
-              <p>Investigate the wharf, inspect interactive evidence, and discover what drove the colonies toward revolution.</p>
-              <span className="revolution-enter"><Headset size={22} weight="duotone" /> Begin investigation</span>
+              <small>American Revolution immersive experience<br />Boston Harbor, December 1773</small>
+              <strong>Investigate Boston Harbor</strong>
+              <p>Explore a 3D harbor through WebXR on supported devices, with device-motion and touch fallbacks.</p>
+              <span className="revolution-enter"><Headset size={22} weight="duotone" /> Enter immersive harbor</span>
             </button>
 
             <div className="revolution-clues glass-surface">
@@ -174,7 +166,7 @@ function RevolutionOverview({ state, dispatch, onFeaturedInvestigation, onHome }
   );
 }
 
-export function LibraryExperience({ state, dispatch, onUnavailable, onProfile, onFeaturedInvestigation, onHome }) {
+export function LibraryExperience({ state, dispatch, onUnavailable, onProfile, onChallenges, onHome }) {
   useEffect(() => {
     if (state.stage !== LIBRARY_STAGES.OVERVIEW) return;
     if (state.activeSection === "timeline") dispatch({ type: "SELECT_TIMELINE_EVENT", eventId: state.selectedTimelineEventId });
@@ -195,7 +187,7 @@ export function LibraryExperience({ state, dispatch, onUnavailable, onProfile, o
     );
   }
   if (state.stage === LIBRARY_STAGES.OVERVIEW) {
-    return <RevolutionOverview state={state} dispatch={dispatch} onFeaturedInvestigation={onFeaturedInvestigation} onHome={onHome} />;
+    return <RevolutionOverview state={state} dispatch={dispatch} onHome={onHome} />;
   }
-  return <LibraryHome dispatch={dispatch} onUnavailable={onUnavailable} progress={progress} onProfile={onProfile} onFeaturedInvestigation={onFeaturedInvestigation} onHome={onHome} />;
+  return <LibraryHome dispatch={dispatch} onUnavailable={onUnavailable} progress={progress} onProfile={onProfile} onChallenges={onChallenges} onHome={onHome} />;
 }

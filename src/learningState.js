@@ -117,7 +117,7 @@ function applyUnitAction(state, unitId, action, at) {
     const results = MEMORY_QUESTIONS.map(q => ({ questionId: q.id, skillId: q.id === "synthesis" ? "evidence" : q.id, correct: after.memoryCheck.answers[q.id] === q.answerId, target: { section: q.reviewSection } }));
     next = { ...next, attempts: [...next.attempts, { unitId, source: "memory", at, results }].slice(-100) };
     next.units = { ...next.units, [unitId]: { ...next.units[unitId], latestMemoryScore: after.memoryCheck.score } };
-    next = recordActivity(next, { unitId, label: `Memory Check · ${after.memoryCheck.score}%`, at, target: { section: "memory" } });
+    next = recordActivity(next, { unitId, label: `Unit Review: ${after.memoryCheck.score}%`, at, target: { section: "memory" } });
   }
   if (getUnitSummary(next, unitId).complete && !next.units[unitId].completedAt) {
     next = { ...next, units: { ...next.units, [unitId]: { ...next.units[unitId], completedAt: at } } };

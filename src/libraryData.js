@@ -68,9 +68,9 @@ export const HARBOR_CLUES = Object.freeze([
 ]);
 
 export const REVOLUTION_SECTIONS = Object.freeze([
-  { id: "explore", label: "Explore" },
+  { id: "explore", label: "Immersive" },
   { id: "timeline", label: "Timeline" },
   { id: "people", label: "People" },
   { id: "evidence", label: "Evidence" },
-  { id: "memory", label: "Memory Check" },
+  { id: "memory", label: "Unit Review" },
 ]);
