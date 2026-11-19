@@ -147,6 +147,7 @@ test("pilot evidence opens and collects in place without changing Library contex
   const id = PILOT_MISSION_ID;
   const clueId = getChallenge(id).clues[0].id;
   let state = send(initialLearningState, { type: "START_CHALLENGE", id });
+  assert.equal(send(state, { type: "VISIT_MISSION_CLUE", id, clueId }), state, "evidence remains sealed until the opening prediction is recorded");
   state = send(state, { type: "ANSWER_MISSION_PREDICTION", id, predictionId: "punishment" });
   const stage = unitLibrary(state).stage;
   const section = unitLibrary(state).activeSection;

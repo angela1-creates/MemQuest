@@ -37,7 +37,7 @@
 .journey-section-title > span, .journey-section-title > strong { color: #adb9cf; font-size: 12px; white-space: nowrap; }
 .journey-section-title > svg { flex: 0 0 auto; color: #dfbf62; }
 .journey-filters { display: flex; gap: 14px; margin-bottom: 20px; }
-.journey-filters label { display: grid; gap: 7px; font-size: 11px; color: #aab9cf; min-width: 0; }
+.journey-filters label { display: grid; flex: 1 1 0; gap: 7px; font-size: 11px; color: #aab9cf; min-width: 0; }
 .journey-filters select { min-height: 44px; width: 100%; background: #121f33; color: #e5eafa; border: 1px solid #a6bbdf30; border-radius: 9px; padding: 8px 30px 8px 12px; font: inherit; font-size: 12px; }
 .challenge-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 17px; }
 .challenge-card { display: flex; flex-direction: column; padding: 0; overflow: hidden; text-align: left; color: #e9edff; background: #111c2e; border: 1px solid #a9bee529; border-radius: 17px; transition: border-color .18s, transform .18s; }
@@ -181,7 +181,6 @@
   .journey-section-title { align-items: flex-start; }
   .journey-section-title > span { white-space: normal; text-align: right; }
   .journey-filters { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-  .journey-filters label:first-child { grid-column: 1 / -1; }
   .challenge-grid { gap: 13px; }
   .challenge-card-image { height: 128px; }
   .challenge-card-copy { padding: 0 12px 15px; }

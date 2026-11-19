@@ -156,7 +156,7 @@ export function learningReducer(state, action) {
     }
     case "VISIT_MISSION_CLUE": {
       const c = getChallenge(action.id), draft = state.challenges[action.id];
-      if (c?.kind !== "mission" || draft?.status !== "in-progress" || !c.clues.some(clue => clue.id === action.clueId)) return state;
+      if (c?.kind !== "mission" || draft?.status !== "in-progress" || (c.prediction && !draft.predictionId) || !c.clues.some(clue => clue.id === action.clueId)) return state;
       return { ...state, challenges: { ...state.challenges, [c.id]: { ...draft, visitedClueIds: [...new Set([...(draft.visitedClueIds ?? []), action.clueId])] } } };
     }
     case "COLLECT_MISSION_CLUE": {
