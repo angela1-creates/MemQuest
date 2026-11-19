@@ -38,8 +38,9 @@ html, body { overflow-x: clip; }
 .challenge-options button.is-incorrect:disabled { color: var(--htt-warning); border-color: var(--htt-warning); background: var(--htt-surface-warning); }
 
 .challenge-feature { min-height: 340px; }
-.challenge-feature-copy { display: flex; min-height: 340px; flex-direction: column; align-items: flex-start; justify-content: center; }
-.challenge-feature h2 { max-width: 17ch; }
+.challenge-feature-copy { display: flex; width: min(70%, 760px); min-height: 340px; flex-direction: column; align-items: flex-start; justify-content: center; }
+.challenge-feature h2 { max-width: 29ch; text-wrap: balance; }
+.challenge-feature p { max-width: 58ch; }
 .challenge-feature-caption { font-style: italic; }
 .challenge-group { margin-top: var(--htt-space-8); }
 .challenge-group-heading { display: flex; align-items: baseline; justify-content: space-between; gap: var(--htt-space-5); margin-bottom: var(--htt-space-3); }
@@ -197,6 +198,9 @@ html, body { overflow-x: clip; }
 @media (max-width: 680px) {
   .mission-phase-rail ol { grid-template-columns: repeat(5, 82px); overflow-x: auto; padding-bottom: 4px; }
   .challenge-feature, .challenge-feature-copy { min-height: 320px; }
+  .challenge-feature-copy { width: 100%; }
+  .challenge-feature h2 { max-width: 24ch; }
+  .challenge-feature p { max-width: 46ch; }
   .challenge-group-heading { align-items: flex-start; flex-direction: column; gap: var(--htt-space-1); }
   .challenge-group-heading p { text-align: left; }
   .challenge-era-heading { align-items: flex-start; flex-direction: column; gap: var(--htt-space-2); }
