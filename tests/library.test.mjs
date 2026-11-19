@@ -15,10 +15,13 @@ import {
 test("opens the American Revolution overview and enters the harbor", () => {
   let state = libraryReducer(initialLibraryState, { type: "OPEN_ERA", eraId: "american-revolution" });
   assert.equal(state.stage, LIBRARY_STAGES.OVERVIEW);
+  assert.equal(state.activeSection, "timeline");
+  assert.equal(state.selectedTimelineEventId, "stamp-act");
   state = libraryReducer(state, { type: "ENTER_HARBOR" });
   assert.equal(state.stage, LIBRARY_STAGES.HARBOR);
   state = libraryReducer(state, { type: "EXIT_HARBOR" });
   assert.equal(state.stage, LIBRARY_STAGES.OVERVIEW);
+  assert.equal(state.activeSection, "timeline");
 });
 
 test("keeps unreleased library eras non-interactive", () => {

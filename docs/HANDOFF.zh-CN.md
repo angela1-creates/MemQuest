@@ -412,11 +412,11 @@ MemQuest
 ├─ Scan：相机文字 → 事件结果 → 人物 / 时间线
 ├─ Library：时代首页
 │  └─ American Revolution：当前完整单元
-│     ├─ Explore：概览 → Boston Harbor 1773
-│     ├─ Timeline：事件和因果联系
+│     ├─ Timeline：默认入口，从 Stamp Act 开始建立事件和因果联系
+│     ├─ Immersive Harbor：显式进入 Boston Harbor 1773 的 WebXR / 3D 体验
 │     ├─ People：人物立场与关系
 │     ├─ Evidence：线索与证据限制
-│     └─ Memory Check：单元练习
+│     └─ Unit Review：五题单元评估
 ├─ Challenges：跨时代的全局任务目录
 └─ Progress：跨时代的全局学习记录
 ```
@@ -478,11 +478,13 @@ Challenges / Progress 的结构面向所有历史时代；目前只有美国革�
 
 修改声音要同时检查：英文脚本、史实、发音、声线、文件大小、组件中的资源引用。只改屏幕文字不会自动修改音频里的内容。
 
-### 7.4 Library → Explore
+### 7.4 Library → Timeline / Immersive Harbor
 
-单元概览介绍时代范围，引导进入港口，并能转到 Timeline、People、Evidence、Memory Check。这里是“进入学习单元”的页面，不是全局首页。
+单元不再使用独立概览卡。进入后默认打开 Timeline，先从 Stamp Act 建立时间与因果定位；点击第二个 Immersive Harbor 标签会直接进入 3D 港口，但不会自动请求 WebXR 或设备方向权限，这些模式仍由场景内的独立控件解释和请求。
 
-![美国革命单元 Explore](./images/explore.jpg)
+各单元页面以较轻的 `American Revolution · The Road to Independence` 上下文行保留单元身份，不恢复会遮挡内容的大型概览卡。Timeline 标题固定为一行、采用较小的编辑式衬线层级，并与事件卡保留清楚留白。港口顶栏不并列显示层级不同的 Library / Timeline 伪面包屑；右侧只以安静的 `Immersive Harbor / Boston · December 1773` 标记当前位置，也不再使用 `1773 World` 或重复的 Environment / Visibility 浮层。目标标题下只有一行场景说明，右下角 Back to Timeline 是返回父级的唯一退出动作。
+
+![较早版本的美国革命单元 Explore](./images/explore.jpg)
 
 图 3：左侧是单元内导航；All eras 返回上一级。布局在手机上会重排，不必照搬桌面侧栏。
 
@@ -505,7 +507,7 @@ Challenges / Progress 的结构面向所有历史时代；目前只有美国革�
 - Listen to the story 播放该物件的故事。
 - Why it matters 在原位置展开更深的解释和相关历史。
 - 切换、关闭卡片或退出场景会停音频；不要让不同故事重叠。
-- 支持设备可尝试 Enter WebXR；普通手机可启用 Use phone motion；不支持时仍可拖动查看。
+- 支持设备显示 Enter immersive VR（Headset / WebXR）；普通手机可选择 Look around with phone（设备方向）；不支持时明确提示使用拖动查看。Immersive Harbor 标签本身就是场景入口，不再保留额外启动页或重复的 Timeline / Evidence 按钮。
 
 ![Boston Harbor 程序化 3D 场景](./images/harbor.jpg)
 
@@ -521,14 +523,14 @@ Challenges / Progress 的结构面向所有历史时代；目前只有美国革�
 
 手机能随着转动改变视角，不自动说明已经进入 WebXR；它也可能是设备方向传感器模式。Scan 成功本身不说明实现了空间定位；只有用户主动打开 Stamp Act 或 Boston Tea Party 的 `Page anchor` 才运行预设图片追踪（自动选图，一次一张），而且仍不等于平面检测、持久空间锚点或任意物体追踪。
 
-### 7.7 Timeline、People、Evidence、Memory Check
+### 7.7 Timeline、Immersive Harbor、People、Evidence、Unit Review
 
 | 页面 | 核心操作 | 继续开发时的重点 |
 | --- | --- | --- |
 | Timeline | 四张带图事件卡；手机水平滑动；选中事件后看细节和因果 | 图片、日期、叙事与选中状态同步，保留跨链接上下文 |
 | People | 四个人物视角切换，人物简介、角色、事件、关系图 | 区分盟友、对手、情境联系；不能把“共同背景”写成“确实认识” |
 | Evidence | 查看物件、报道、法律和记录；看支持什么与不能证明什么 | 有些场景证据需要先发现；锁定时不能计为已学习 |
-| Memory Check | 五道单元练习题、提交、反馈、关联复习、重试 | 不完整不能随意计分，重试不制造重复成就 |
+| Unit Review | 五道单元评估题、提交、反馈、关联复习、重试 | 与全局 Challenges 区分；不完整不能随意计分，重试不制造重复成就 |
 
 People 的当前人物是 Samuel Adams、Thomas Hutchinson、George Hewes、John Hancock。人物数据与 Scan 中以 Samuel Adams 为主的预设问答不是同一个功能范围。
 
@@ -554,7 +556,7 @@ Progress 把**看过什么**与**答得怎样**分开：
 - 学习反馈有时间顺序、因果、人物视角、证据推理四类。
 - 最近 100 次练习中，每道不同题目使用最新答案；四个事件的排序整体是一道题。
 - 至少三道不同题目的结果，才显示该能力的正确率；不足时明确提示。
-- 美国革命目前有 18 条内容记录；完成全部探索且 Memory Check 至少 80% 才获得单元完成标记。
+- 美国革命目前有 18 条内容记录；完成全部探索且 Unit Review 至少 80% 才获得单元完成标记。
 - 已获得完成标记不会因后续较低分被撤销；重试同一挑战不重复计数。
 - 尚未上线的时代不进入统计总数。
 - 不把浏览量写成知识掌握率，不显示“学会全部历史的百分比”。
@@ -693,11 +695,11 @@ Scan 测试页的 QA 操作：
 | 1254×960 桌面/平板 | 大屏层级合理，不仅是手机界面的放大 |
 | Scan | 同意/拒绝授权、匹配/不匹配、重试、退出 |
 | 相机暂停 | 切到其他应用再回来，允许用户恢复，不偷偷持续拍摄 |
-| Library | Home → Explore → 场景 → 返回 |
+| Library | Home → Timeline → Immersive Harbor → 场景 → 返回 |
 | 场景 | 点物件有效；拖动不误触；展开/关闭；音频不重叠 |
 | Timeline / People | 选中内容与跳转目标一致 |
 | Evidence | 锁定状态与发现条件合理 |
-| Memory Check | 未完成不可提交；反馈和重试正确 |
+| Unit Review | 未完成不可提交；反馈和重试正确 |
 | Challenges | 从任务去资料再回来，草稿不丢 |
 | Progress | 初始不预填；重复查看不重复加分 |
 | 声音 | 手机真实点击后可播放；切换/退出能停 |

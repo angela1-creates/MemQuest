@@ -25,7 +25,7 @@ MemQuest 是一个以手机为主的互动历史学习体验，把历史叙事�
 
 ### Library：资料、人物与证据
 
-American Revolution 单元提供 Explore、Timeline、People、Evidence 和 Memory Check。学习者可以比较事件、人物关系、史料能支持什么，以及哪些结论不能由现有证据证明。
+American Revolution 单元默认从 Timeline 开始，依次提供 Timeline、Immersive Harbor、People、Evidence 和 Unit Review。学习者可以比较事件、人物关系、史料能支持什么，以及哪些结论不能由现有证据证明。Immersive Harbor 会先显示 WebXR / 3D 说明和明确入口，不会自动请求沉浸式权限。
 
 ### Boston Harbor, 1773
 
@@ -53,11 +53,11 @@ MemQuest
 │   └── Camera → OCR / image search → Event → Character / Timeline
 ├── Library
 │   └── American Revolution
-│       ├── Explore
 │       ├── Timeline
+│       ├── Immersive Harbor
 │       ├── People
 │       ├── Evidence
-│       └── Memory Check
+│       └── Unit Review
 ├── Challenges
 │   ├── Featured Investigation
 │   ├── Quick Event Files

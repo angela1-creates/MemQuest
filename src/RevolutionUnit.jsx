@@ -107,6 +107,7 @@ function SectionHeader({ section, trailing }) {
       <div className="unit-section-title">
         <span className="unit-section-icon"><Icon size={24} weight="duotone" /></span>
         <div>
+          <span className="unit-context-title">American Revolution · The Road to Independence</span>
           <small>{meta.kicker}</small>
           <h1 id={`unit-${section}-title`}>{meta.title}</h1>
           <p>{meta.description}</p>

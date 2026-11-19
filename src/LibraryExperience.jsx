@@ -2,7 +2,6 @@ import { useEffect } from "react";
 import {
   ArrowLeft,
   BookOpen,
-  CalendarBlank,
   ChartLineUp,
   CheckSquare,
   Compass,
@@ -14,7 +13,6 @@ import {
   Sparkle,
   UsersThree,
 } from "@phosphor-icons/react";
-import harborPreview from "./assets/timeline/boston-tea-party-1773.webp";
 import { HarborScene } from "./HarborScene.jsx";
 import { LIBRARY_ERAS, REVOLUTION_SECTIONS } from "./libraryData.js";
 import { calculateUnitProgress, LIBRARY_STAGES } from "./libraryState.js";
@@ -99,7 +97,7 @@ function UnitNavigation({ activeSection, dispatch, className = "" }) {
             type="button"
             className={section.id === activeSection ? "is-active" : ""}
             key={section.id}
-            onClick={() => dispatch({ type: "OPEN_SECTION", sectionId: section.id })}
+            onClick={() => dispatch({ type: section.id === "explore" ? "ENTER_HARBOR" : "OPEN_SECTION", sectionId: section.id })}
             aria-current={section.id === activeSection ? "page" : undefined}
           >
             <Icon size={21} weight="duotone" /> <span>{section.label}</span>
@@ -111,9 +109,8 @@ function UnitNavigation({ activeSection, dispatch, className = "" }) {
 }
 
 function RevolutionOverview({ state, dispatch, onHome }) {
-  const activeSection = state.activeSection ?? "explore";
+  const activeSection = state.activeSection ?? "timeline";
   const progress = calculateUnitProgress(state);
-  const remainingClues = Math.max(0, 4 - state.discoveredClueIds.length);
 
   return (
     <section className="revolution-overview" aria-label="American Revolution unit">
@@ -124,7 +121,7 @@ function RevolutionOverview({ state, dispatch, onHome }) {
         <div className="revolution-sidebar-progress"><span>UNIT EXPLORATION: {progress}%</span><div><i style={{ width: `${progress}%` }} /></div></div>
       </aside>
 
-      <main className={`revolution-stage ${activeSection !== "explore" ? "is-content-section" : ""}`} style={{ "--overview-image": `url(${harborPreview})` }}>
+      <main className="revolution-stage is-content-section">
         <header className="revolution-mobile-header">
           <button type="button" onClick={() => dispatch({ type: "BACK_HOME" })}><ArrowLeft size={18} /> Library</button>
           <span>{REVOLUTION_SECTIONS.find((section) => section.id === activeSection)?.label ?? "American Revolution"}</span>
@@ -132,35 +129,12 @@ function RevolutionOverview({ state, dispatch, onHome }) {
         </header>
         <UnitNavigation activeSection={activeSection} dispatch={dispatch} className="revolution-mobile-tabs" />
 
-        {activeSection === "explore" ? (
-          <>
-            <div className="revolution-stage-scrim" aria-hidden="true" />
-            <button type="button" className="revolution-explore-card glass-surface" onClick={() => dispatch({ type: "ENTER_HARBOR" })}>
-              <span className="revolution-location-dot" aria-hidden="true" />
-              <small>American Revolution immersive experience<br />Boston Harbor, December 1773</small>
-              <strong>Investigate Boston Harbor</strong>
-              <p>Explore a 3D harbor through WebXR on supported devices, with device-motion and touch fallbacks.</p>
-              <span className="revolution-enter"><Headset size={22} weight="duotone" /> Enter immersive harbor</span>
-            </button>
-
-            <div className="revolution-clues glass-surface">
-              <span className="revolution-clue-ring">{state.discoveredClueIds.length}/4</span>
-              <div><strong>Clues Found</strong><small>{remainingClues === 0 ? "Harbor archive complete" : `${remainingClues} harbor ${remainingClues === 1 ? "record" : "records"} remain`}</small></div>
-            </div>
-
-            <div className="revolution-actions">
-              <button type="button" onClick={() => dispatch({ type: "OPEN_SECTION", sectionId: "timeline" })}><CalendarBlank size={21} /> Timeline</button>
-              <button type="button" onClick={() => dispatch({ type: "OPEN_SECTION", sectionId: "evidence" })}><FolderOpen size={21} /> Evidence</button>
-            </div>
-          </>
-        ) : (
-          <RevolutionUnitContent
-            section={activeSection}
-            state={state}
-            dispatch={dispatch}
-            onEnterHarbor={() => dispatch({ type: "ENTER_HARBOR" })}
-          />
-        )}
+        <RevolutionUnitContent
+          section={activeSection}
+          state={state}
+          dispatch={dispatch}
+          onEnterHarbor={() => dispatch({ type: "ENTER_HARBOR" })}
+        />
       </main>
     </section>
   );
