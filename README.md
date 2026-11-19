@@ -35,12 +35,13 @@ American Revolution 单元提供 Explore、Timeline、People、Evidence 和 Memo
 
 当前采用“一个重点调查 + 四个短任务”的两层结构：
 
-- **Featured Investigation：Why Did the Colonies Coordinate?** 是约 10–12 分钟的主任务。学习者先作预测，再调查 Boston Tea Party、Coercive Acts 和各殖民地回应，随后完成因果链、两道知识题，并用证据解释为何这些发展促成了 First Continental Congress。任务明确避免把 Tea Party 直接写成 Congress 的单一步因果。
+- **Featured Investigation：Why Did Colonial Cooperation Intensify in 1774?** 是约 10–12 分钟的主任务。它先说明 1772 年的 Committees of Correspondence 已经在发展合作网络，再让学习者调查 Boston Tea Party、Coercive Acts 和各殖民地回应。学习者不仅排列时间顺序，还必须选择相关证据并解释为何对 Massachusetts 的惩罚促使其他殖民地加强合作。
 - **Quick Event Files** 保留四个事件各自的短任务，适合快速复习或分次完成。每项含两条来源关联线索、渐进提示、两道知识题和一件档案收藏物。
 - **Challenge mode** 隐藏提示，但不改变学习得分。
 - 原有四事件排序题保留在 **Practice Lab**，作为可独立练习的总结挑战，不再用四件收藏物强制解锁。
+- 完成主任务后可选择一项 **AP-style evidence response**：阅读带出处的 1774 年一手资料节选，完成三段简短书面回答并使用自检表。它不是 College Board 官方题目，不自动评分，也不计入任务完成分数。
 
-提示不会自动产生发现或扣分；重复完成不会重复增加完成数。练习表现继续采用“最近 100 次会话中，每道不同题目的最新答案”规则。
+提示不会自动产生发现或扣分；提示次数、因果解释检查次数和修改次数作为独立的学习过程信号保存在本机。重复完成不会重复增加完成数。练习表现继续采用“最近 100 次会话中，每道不同题目的最新答案”规则。游戏完成分数不能作为学习效果证据；相关研究需要独立测量。
 
 四张高分辨率 OCR 扫描海报位于 `src/assets/scan-posters/`。海报中的生成画面属于历史诠释；在真实手机完成 OCR、连续图片识别和 Page anchor 验证前，不应称为生产级识别目标。
 
@@ -64,7 +65,7 @@ MemQuest
 └── Progress
 ```
 
-Ancient China、Silk Road Civilizations 和 World War II 目前只是未来内容预览，不计入学习总数。
+Library 只展示一个非功能性的未来方向：**Up Next: Silk Roads: Networks of Exchange (c. 1200-1450 CE)**。先验证美国革命任务并收集 AP World History 教师反馈，再决定是否制作这项调查；它目前不计入学习总数。
 
 ## 技术栈
 

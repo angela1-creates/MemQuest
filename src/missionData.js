@@ -18,13 +18,19 @@ export const PILOT_MISSION = {
   id: PILOT_MISSION_ID,
   kind: "mission",
   category: "pilot",
-  title: "Why Did the Colonies Coordinate?",
-  description: "Build an evidence-based explanation of how punishment in Massachusetts encouraged intercolonial action in 1774.",
+  title: "Why Did Colonial Cooperation Intensify in 1774?",
+  description: "Explain how punishment in Massachusetts intensified cooperation that colonists had already begun building.",
   eventId: "tea-party",
   image: "tea-party",
   skillId: "causality",
   duration: "10-12 min",
   contextEventIds: ["stamp-act", "massacre", "tea-party", "congress"],
+  priorContext: {
+    title: "Cooperation did not begin with the Tea Party",
+    text: "Colonists had already shared news and organized resistance. Boston formed a Committee of Correspondence in 1772, and intercolonial committees expanded that network in 1773.",
+    sourceLabel: "U.S. National Park Service · Timeline of the Revolution",
+    sourceUrl: "https://www.nps.gov/subjects/americanrevolution/timeline.htm",
+  },
   prediction: {
     prompt: "Before opening the evidence, what most likely pushed colonies toward coordinated action in 1774?",
     options: [
@@ -70,7 +76,7 @@ export const PILOT_MISSION = {
     },
   ],
   causalMap: {
-    prompt: "Arrange the causal chain. Earlier events supplied context, but these four developments form the direct 1773-1774 sequence.",
+    prompt: "First establish the chronology. Earlier cooperation supplied context, while these four developments form the direct 1773-1774 sequence.",
     initialOrder: ["colonial-response", "tea-party", "congress", "coercive-acts"],
     steps: [
       { id: "tea-party", label: "Boston Tea Party", date: "December 1773" },
@@ -79,11 +85,46 @@ export const PILOT_MISSION = {
       { id: "congress", label: "First Continental Congress meets", date: "September 1774" },
     ],
   },
+  causalReasoning: {
+    prompt: "Why did Parliament's punishment of Massachusetts encourage cooperation among other colonies?",
+    evidencePrompt: "Choose the evidence that best supports the connection.",
+    evidenceOptions: [
+      { id: "outside-response", label: "Colonies outside Massachusetts sent aid, passed resolves, and selected delegates" },
+      { id: "tea-cargo", label: "The destroyed tea belonged to the East India Company" },
+      { id: "night-action", label: "The Tea Party occurred at night" },
+    ],
+    evidenceAnswerId: "outside-response",
+    explanationPrompt: "Explain what that evidence shows.",
+    explanationOptions: [
+      { id: "shared-threat", label: "Other colonies treated punishment of Massachusetts as a wider threat to colonial rights" },
+      { id: "instant-unity", label: "The Tea Party immediately united all thirteen colonies around independence" },
+      { id: "trade-only", label: "Colonies cooperated only to restore the tea trade" },
+    ],
+    explanationAnswerId: "shared-threat",
+    success: "The evidence and explanation work together: action outside Massachusetts shows that colonists treated the Coercive Acts as a wider political threat.",
+  },
   questions: [
     { id: "pilot-evidence", skillId: "evidence", prompt: "Which evidence best supports the claim that the crisis became intercolonial?", options: [{ id: "responses", label: "Other colonies sent support, organized protest, and selected delegates" }, { id: "cargo", label: "Tea was stored in wooden chests" }, { id: "date", label: "The Tea Party occurred at night" }], answerId: "responses", explanation: "Actions outside Massachusetts show that the crisis was being interpreted and answered across colonial boundaries.", target: { section: "timeline", eventId: "congress" } },
     { id: "pilot-conclusion", skillId: "causality", prompt: "Which conclusion is best supported by the full evidence chain?", options: [{ id: "direct", label: "The Tea Party immediately and unanimously united all thirteen colonies" }, { id: "coordination", label: "Britain's punishment of Massachusetts helped turn a local conflict into a shared reason for coordination" }, { id: "independence", label: "The Congress met after Britain recognized colonial independence" }], answerId: "coordination", explanation: "The Tea Party mattered through the response it provoked. Punishment, colonial solidarity, and organizing connected the protest to the Congress.", target: { section: "timeline", eventId: "congress" } },
   ],
-  finalExplanation: "The Boston Tea Party did not automatically produce the First Continental Congress. Parliament's Coercive Acts transformed the dispute: closing Boston Harbor and changing Massachusetts government alarmed other colonies. Their aid, resolutions, boycotts, and delegate selection moved twelve colonies toward coordinated resistance in Philadelphia.",
+  finalExplanation: "Colonial cooperation developed over time; the Boston Tea Party did not create it or automatically produce the First Continental Congress. Parliament's Coercive Acts intensified existing networks by making punishment of Massachusetts feel relevant beyond one colony. Aid, resolutions, boycotts, and delegate selection then moved twelve colonies toward coordinated resistance in Philadelphia. Congress sought redress and common action, not yet a declaration of independence.",
+  apChallenge: {
+    title: "Optional AP-style evidence response",
+    note: "AP-style practice for concise historical reasoning. This is not an official College Board question and does not affect mission completion.",
+    sourceTitle: "New York Committee of Correspondence resolutions, July 19, 1774",
+    sourceUrl: "https://tile.loc.gov/storage-services/service/rbc/rbpe/rbpe10/rbpe106/1060200a/1060200a.pdf",
+    excerpt: "“The aforesaid Attack made on the Bostonians, is more dangerous to the Liberties of America, than if directed against all the Colonies.”",
+    prompts: [
+      { id: "action", label: "Identify one British action that contributed to colonial opposition in 1774." },
+      { id: "cooperation", label: "Explain how that action encouraged cooperation among colonies." },
+      { id: "perspective", label: "Explain how the source's perspective helps us understand the colonial response." },
+    ],
+    rubric: [
+      "Names a specific British action, such as closing Boston Harbor or changing Massachusetts government.",
+      "Connects that action to cooperation outside Massachusetts using relevant evidence.",
+      "Explains that New York correspondents framed Boston's punishment as a threat to the liberties of all colonies.",
+    ],
+  },
 };
 
 export const TIME_TRAVELER_MISSIONS = [

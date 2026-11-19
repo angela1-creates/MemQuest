@@ -113,6 +113,7 @@ test("pilot records a prediction, evidence inquiry, causal map, and defended con
   let state = send(initialLearningState, { type: "START_CHALLENGE", id });
   assert.equal(send(state, { type: "CHECK_CAUSAL_MAP", id }), state, "the causal map stays locked before prediction and evidence");
   state = send(state, { type: "ANSWER_MISSION_PREDICTION", id, predictionId: "tea-alone" });
+  state = send(state, { type: "REQUEST_MISSION_HINT", id, clueId: mission.clues[0].id });
   for (const clue of mission.clues) {
     state = send(state, { type: "VISIT_MISSION_CLUE", id, clueId: clue.id });
     state = send(state, { type: "COLLECT_MISSION_CLUE", id, clueId: clue.id });
@@ -122,12 +123,44 @@ test("pilot records a prediction, evidence inquiry, causal map, and defended con
   state = send(state, { type: "MOVE_CAUSAL_STEP", id, stepId: "coercive-acts", direction: -1 });
   assert.deepEqual(state.challenges[id].causalOrder, mission.causalMap.steps.map(step => step.id));
   state = send(state, { type: "CHECK_CAUSAL_MAP", id });
+  state = send(state, { type: "SELECT_CAUSAL_EVIDENCE", id, optionId: "tea-cargo" });
+  state = send(state, { type: "SELECT_CAUSAL_EXPLANATION", id, optionId: mission.causalReasoning.explanationAnswerId });
+  state = send(state, { type: "CHECK_CAUSAL_REASONING", id });
+  assert.equal(state.challenges[id].causalReasoningResolved, false);
+  state = send(state, { type: "SELECT_CAUSAL_EVIDENCE", id, optionId: mission.causalReasoning.evidenceAnswerId });
+  state = send(state, { type: "CHECK_CAUSAL_REASONING", id });
+  assert.equal(state.challenges[id].causalReasoningResolved, true);
   for (const question of mission.questions) state = send(state, { type: "ANSWER_CHALLENGE", id, questionId: question.id, answerId: question.answerId });
   state = send(state, { type: "SUBMIT_CHALLENGE", id });
   assert.equal(challengeStatus(state, id), "complete");
   assert.equal(state.challenges[id].predictionId, "tea-alone", "the opening misconception is retained for reflection");
   assert.equal(state.challenges[id].lastResult.correct, 3);
   assert.equal(state.attempts.at(-1).results.length, 3, "the causal map counts as one question");
+  assert.deepEqual(state.attempts.at(-1).process, { hintsUsed: 1, causalReasoningAttempts: 2, causalReasoningRevisions: 1 }, "learning-process signals stay separate from achievement results");
+  for (const prompt of mission.apChallenge.prompts) state = send(state, { type: "UPDATE_AP_RESPONSE", id, promptId: prompt.id, value: `Response for ${prompt.id}` });
+  state = send(state, { type: "CHECK_AP_RESPONSE", id });
+  assert.equal(state.challenges[id].apSelfChecked, true);
+  assert.equal(state.attempts.at(-1).results.length, 3, "the optional AP-style response does not alter the pilot score");
+});
+
+test("pilot interruption restores evidence reasoning without inventing old-save progress", () => {
+  const id = PILOT_MISSION_ID;
+  const mission = getChallenge(id);
+  let state = send(initialLearningState, { type: "START_CHALLENGE", id });
+  state = send(state, { type: "ANSWER_MISSION_PREDICTION", id, predictionId: "punishment" });
+  for (const clue of mission.clues) {
+    state = send(state, { type: "VISIT_MISSION_CLUE", id, clueId: clue.id });
+    state = send(state, { type: "COLLECT_MISSION_CLUE", id, clueId: clue.id });
+  }
+  state = send(state, { type: "CHECK_CAUSAL_MAP", id });
+  state = send(state, { type: "SELECT_CAUSAL_EVIDENCE", id, optionId: mission.causalReasoning.evidenceAnswerId });
+  const restored = restoreLearningState(JSON.parse(JSON.stringify(state)));
+  assert.equal(restored.challenges[id].predictionId, "punishment");
+  assert.deepEqual(restored.challenges[id].collectedClueIds, mission.clues.map(clue => clue.id));
+  assert.equal(restored.challenges[id].causalEvidenceId, mission.causalReasoning.evidenceAnswerId);
+  const oldSave = restoreLearningState({ version: 1, challenges: { [id]: { status: "in-progress", startedAt: at, answers: {}, visitedClueIds: [], collectedClueIds: [] } } });
+  assert.equal(oldSave.challenges[id].causalReasoningAttempts, 0);
+  assert.equal(oldSave.challenges[id].causalReasoningResolved, false);
 });
 test("chronology arrows reorder without duplication and score the actual submitted order", () => {
   let state = send(initialLearningState, { type: "START_CHALLENGE", id: "order-events" });

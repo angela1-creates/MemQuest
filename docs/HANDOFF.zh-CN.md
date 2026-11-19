@@ -61,7 +61,7 @@
 
 MemQuest 是一个可以在手机浏览器打开的历史学习交互原型。用户既能通过相机读到印刷英文中的历史线索，也能进入数字历史档案和 3D 港口场景，再通过挑战和反馈继续学习。
 
-当前完整样例是 **The American Revolution**。其他时代卡片只是 Coming soon，不是已经开发好的内容。
+当前完整样例是 **The American Revolution**。Library 只展示一个非功能性的未来方向 **Up Next: Silk Roads: Networks of Exchange (c. 1200-1450 CE)**；它不是已经开发好的单元，也不进入学习统计。
 
 ### 2.1 最少需要认识的词
 
@@ -425,7 +425,7 @@ Challenges / Progress 的结构面向所有历史时代；目前只有美国革�
 
 ![Library 首页；只有美国革命可进入](./images/library.jpg)
 
-图 1：本地真实应用截图，初始探索为 0%。其他时代明确标记 Coming soon。
+图 1：较早版本的本地真实应用截图，初始探索为 0%。当前界面已经把多个 Coming soon 卡片收敛为一个较低层级的 Silk Roads “Up Next”预览；本图不能作为当前卡片数量的验证截图。
 
 ### 7.2 Scan：对文字进行事件匹配
 
@@ -540,7 +540,9 @@ People 的当前人物是 Samuel Adams、Thomas Hutchinson、George Hewes、John
 
 Challenges 保留港口调查、事件排序、人物视角和证据推理，并加入 History Time Travelers。可以按时代、技能和完成状态筛选；跳到资料页再返回时，应保留挑战进度、线索、提示、预测、答案和排序。
 
-**History Time Travelers 采用两层结构。** Featured Investigation 是约 10–12 分钟的重点任务 **Why Did the Colonies Coordinate?**。学习者先预测 Tea Party 是否足以解释殖民地联合，再依次调查 Boston Tea Party、英国政府的 Coercive Acts，以及各殖民地的回应；随后把四个节点放入因果链，完成两道知识题，并解锁一段基于证据的最终解释。任务必须保留关键中间发展，不能把 Boston Tea Party 直接写成 First Continental Congress 的单一步因果；Congress 代表十二个殖民地，Georgia 没有派代表。
+**History Time Travelers 采用两层结构。** Featured Investigation 是约 10–12 分钟的重点任务 **Why Did Colonial Cooperation Intensify in 1774?**。它先说明殖民地合作并非由 Tea Party 从零创造：1772 年 Committees of Correspondence 已经推动信息与行动网络。学习者再调查 Boston Tea Party、英国政府的 Coercive Acts，以及各殖民地回应；先排列直接因果链，再选择相关证据并解释为何惩罚 Massachusetts 会促使其他殖民地加强合作。错误组合可以根据反馈修改。任务不能暗示十三个殖民地一致行动，也不能暗示 First Continental Congress 已把独立作为既定目标；Congress 有十二个殖民地参加，Georgia 没有派代表。
+
+提示次数、因果解释检查次数和修改次数作为**学习过程信号**单独保存，不扣减成就或题目分数。完成主任务后可选择 AP-style evidence response：阅读 Library of Congress 收藏的 1774 年 New York Committee of Correspondence 节选，回答 British action、intercolonial cooperation 和 source perspective 三个问题，再用自检表回看。它明确标注为非 College Board 官方题目，不自动评分、不影响任务完成，书面内容只保存在本机。
 
 原有四项事件任务保留为可选的 **Quick Event Files**。Stamp Act、Boston Massacre、Boston Tea Party 和 First Continental Congress 各有一项可续做的短任务：进入真实 Timeline / People / Evidence 资料，记录两条隐藏线索，完成两道知识题并获得一张档案收藏物。普通模式可逐级打开提示，Challenge mode 会隐藏提示。四事件排序题保留在 **Practice Lab**，作为可独立完成的总结练习，不再要求先收集四件收藏物。提示不自动算发现、不扣分；重试不重复增加完成数，题目表现继续使用“最近 100 次练习中每道不同题目的最新答案”规则。
 
@@ -873,9 +875,11 @@ Vercel 支持与 Git 仓库关联后，在 push / 合并到生产分支时自动
 | 在港口找到茶箱并解释它为何重要 | 是否区分拖动与点击，是否找到展开说明 |
 | 比较两个人物的不同立场 | 是否把“立场”理解成简单的好人 / 坏人标签 |
 | 使用一份证据回答问题 | 是否看到来源和证据能证明什么 / 不能证明什么 |
+| 完成 History Time Travelers 主任务 | 是否能在不被指导的情况下完成；用时；第一个困惑点；能否用证据解释 Coercive Acts 与 First Continental Congress 的关系 |
+| 完成可选 AP-style response | 是否能识别 British action、解释殖民地合作，并使用来源视角；自检表哪里有帮助或造成困惑 |
 | 完成挑战后查看 Progress | 是否区分探索记录与题目表现 |
 
-小样本结果适合发现问题，不足以证明普遍学习效果。没有对照条件和合适测量，不要给出“显著提升”的结论。保留失败记录通常比只展示满分更能体现设计判断。
+第一次可用性试点建议 5–8 名学生，以观察为主而不是边做边教。分别记录：是否能独立完成和用时；能否用相关证据解释 Coercive Acts 与 First Continental Congress 的关系；哪条线索或反馈最有帮助、哪里最困惑。小样本结果适合发现问题，不足以证明普遍学习效果。游戏自己的完成分数不能当作学习证明；若要声称历史理解提升，需要独立于游戏的前后测或迁移题，并尽可能设置合理的比较学习活动。保留失败记录通常比只展示满分更能体现设计判断。
 
 ### 11.6 素材与历史内容的责任
 

@@ -24,6 +24,7 @@ dist/
 qa-*.png
 design-qa.md
 .artifacts/
+.hallmark/
 *.log
 *.tmp
 *.temp

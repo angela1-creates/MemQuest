@@ -6,9 +6,7 @@ import { PILOT_MISSION, TIME_TRAVELER_MISSIONS } from "./missionData.js";
 export const REVOLUTION_UNIT_ID = "american-revolution";
 export const LEARNING_CATALOG = [
   { id: REVOLUTION_UNIT_ID, eraId: REVOLUTION_UNIT_ID, title: "American Revolution", dates: "1765–1783", status: "available", eventIds: TIMELINE_EVENTS.map(e => e.id), personIds: REVOLUTION_PEOPLE.map(p => p.id), evidenceIds: REVOLUTION_EVIDENCE.map(e => e.id), clueIds: HARBOR_CLUES.map(c => c.id) },
-  { id: "ancient-china", eraId: "ancient-china", title: "Ancient China", dates: "2070 BC–220 AD", status: "coming-soon" },
-  { id: "silk-road", eraId: "silk-road", title: "Silk Road Civilizations", dates: "130 BC–1453 AD", status: "coming-soon" },
-  { id: "world-war-ii", eraId: "world-war-ii", title: "World War II", dates: "1939–1945", status: "coming-soon" },
+  { id: "silk-road", eraId: "silk-road", title: "Silk Roads: Networks of Exchange", dates: "c. 1200-1450 CE", status: "coming-soon" },
 ];
 
 export const LEARNING_SKILLS = [

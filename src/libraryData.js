@@ -7,22 +7,12 @@ export const LIBRARY_ERAS = Object.freeze([
     description: "Trace the protests, people, and evidence that transformed thirteen colonies into a new nation.",
   },
   {
-    id: "ancient-china",
-    title: "Ancient China",
-    dates: "2070 BC - 220 AD",
-    status: "preview",
-  },
-  {
     id: "silk-road",
-    title: "Silk Road Civilizations",
-    dates: "130 BC - 1453 AD",
+    title: "Up Next: Silk Roads",
+    subtitle: "Networks of Exchange",
+    dates: "c. 1200-1450 CE",
     status: "preview",
-  },
-  {
-    id: "world-war-ii",
-    title: "World War II",
-    dates: "1939 - 1945",
-    status: "preview",
+    description: "Explore how trade, ideas, and technologies connected civilizations across Eurasia.",
   },
 ]);
 

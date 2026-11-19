@@ -33,7 +33,7 @@ function EraCard({ era, onOpen, onUnavailable }) {
   const locked = era.status === "locked";
   return (
     <article
-      className={`library-era-card ${active ? "is-active" : ""} ${locked ? "is-locked" : ""}`}
+      className={`library-era-card ${active ? "is-active" : "is-preview"} ${locked ? "is-locked" : ""}`}
       onClick={active ? onOpen : undefined}
     >
       <div className="library-era-title-row">
@@ -42,7 +42,8 @@ function EraCard({ era, onOpen, onUnavailable }) {
         {locked && <LockSimple size={18} weight="fill" aria-label="Locked" />}
       </div>
       <p>{era.dates}</p>
-      {active && <small>{era.description}</small>}
+      {era.subtitle && <strong className="library-era-subtitle">{era.subtitle}</strong>}
+      {era.description && <small>{era.description}</small>}
       {active && <div className="library-era-progress">
         <div><span>Exploration</span><strong>{era.progress}%</strong></div>
         <div className="library-card-track"><span style={{ width: `${era.progress}%` }} /></div>
@@ -53,9 +54,7 @@ function EraCard({ era, onOpen, onUnavailable }) {
           <button type="button" className="library-icon-button" onClick={onOpen} aria-label="Open American Revolution overview"><Compass size={22} /></button>
         </div>
       ) : (
-        <button type="button" className="library-era-preview" onClick={onUnavailable} disabled>
-          Coming soon
-        </button>
+        <span className="library-era-preview">Prospective investigation</span>
       )}
     </article>
   );
@@ -82,7 +81,7 @@ function LibraryHome({ dispatch, onUnavailable, progress, onProfile }) {
               key={era.id}
               era={era.id === "american-revolution" ? { ...era, progress } : era}
               onOpen={() => dispatch({ type: "OPEN_ERA", eraId: era.id })}
-              onUnavailable={() => onUnavailable(`${era.title} is coming in a future archive update`)}
+              onUnavailable={() => onUnavailable(`${era.title} is the next prospective investigation after the American Revolution pilot is validated`)}
             />
           ))}
         </div>

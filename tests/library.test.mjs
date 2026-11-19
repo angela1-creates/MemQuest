@@ -22,9 +22,10 @@ test("opens the American Revolution overview and enters the harbor", () => {
 });
 
 test("keeps unreleased library eras non-interactive", () => {
-  const state = libraryReducer(initialLibraryState, { type: "OPEN_ERA", eraId: "ancient-china" });
+  const state = libraryReducer(initialLibraryState, { type: "OPEN_ERA", eraId: "silk-road" });
   assert.equal(state.stage, LIBRARY_STAGES.HOME);
   assert.equal(LIBRARY_ERAS.filter((era) => era.status === "active").length, 1);
+  assert.deepEqual(LIBRARY_ERAS.filter((era) => era.status === "preview").map((era) => era.id), ["silk-road"]);
 });
 
 test("tracks each harbor clue only once", () => {
