@@ -4,6 +4,7 @@ import { CHALLENGES, LEARNING_CATALOG, LEARNING_SKILLS, REVOLUTION_UNIT_ID, getC
 import { challengeStatus, challengeUnlocked, getUnitSummary, harborSteps, skillResults, unitLibrary } from "./learningState.js";
 import { HARBOR_CLUES } from "./libraryData.js";
 import { TIMELINE_EVENTS } from "./scanData.js";
+import { canBeginOrderDrag, closestOrderIndex } from "./orderDrag.js";
 import { PILOT_MISSION_ID, TIME_TRAVELER_MISSION_IDS } from "./missionData.js";
 import harborImage from "./assets/timeline/boston-tea-party-1773.webp";
 import timelineImage from "./assets/timeline/continental-congress-1774.webp";
@@ -155,7 +156,9 @@ function OrderChallenge({ challenge: c, draft, completed, dispatch, review }) {
   };
   const moveBy = (eventId, direction) => moveTo(eventId, orderRef.current.indexOf(eventId) + direction);
   const beginDrag = (pointerEvent, eventId) => {
-    if (completed || (pointerEvent.pointerType === "mouse" && pointerEvent.button !== 0)) return;
+    const fromHandle = Boolean(pointerEvent.target.closest(".order-drag-handle"));
+    const fromControls = Boolean(pointerEvent.target.closest(".order-controls"));
+    if (!canBeginOrderDrag({ completed, pointerType: pointerEvent.pointerType, button: pointerEvent.button, fromHandle, fromControls })) return;
     pointerEvent.preventDefault();
     dragIdRef.current = eventId;
     setDraggingId(eventId);
@@ -166,11 +169,7 @@ function OrderChallenge({ challenge: c, draft, completed, dispatch, review }) {
     if (!eventId || !listRef.current) return;
     pointerEvent.preventDefault();
     const rows = [...listRef.current.querySelectorAll("[data-order-event-id]")];
-    const closest = rows.reduce((best, row) => {
-      const distance = Math.abs(pointerEvent.clientY - (row.getBoundingClientRect().top + row.getBoundingClientRect().height / 2));
-      return !best || distance < best.distance ? { row, distance } : best;
-    }, null);
-    const targetIndex = closest ? rows.indexOf(closest.row) : -1;
+    const targetIndex = closestOrderIndex(pointerEvent.clientY, rows.map(row => row.getBoundingClientRect().top + row.getBoundingClientRect().height / 2));
     if (targetIndex >= 0) moveTo(eventId, targetIndex);
   };
   const endDrag = pointerEvent => {
@@ -180,7 +179,7 @@ function OrderChallenge({ challenge: c, draft, completed, dispatch, review }) {
     setDraggingId(null);
   };
 
-  return <section className="journey-panel order-challenge"><h2>From earliest to latest</h2><p>Drag each handle to reorder the events, or use the arrow buttons for precise and keyboard-friendly moves. Dates appear after you check your sequence.</p><ol ref={listRef}>{order.map((id, i) => { const event = TIMELINE_EVENTS.find(item => item.id === id); return <li data-order-event-id={id} className={draggingId === id ? "is-dragging" : ""} key={id}><span className={`order-drag-handle ${completed ? "is-disabled" : ""}`} aria-hidden="true" onPointerDown={pointerEvent => beginDrag(pointerEvent, id)} onPointerMove={drag} onPointerUp={endDrag} onPointerCancel={endDrag}><DotsSixVertical size={23} weight="bold" /></span><span className="order-index">{i + 1}</span><div className="order-event-copy"><strong>{event.title}</strong>{completed && <small>{event.year} · {TIMELINE_EVENTS[i].id === id ? "Correct position" : `Correct position: ${TIMELINE_EVENTS.findIndex(item => item.id === id) + 1}`}</small>}</div><div className="order-controls"><button type="button" aria-label={`Move ${event.title} earlier`} disabled={completed || i === 0} onClick={() => moveBy(id, -1)}><ArrowUp size={19} /></button><button type="button" aria-label={`Move ${event.title} later`} disabled={completed || i === order.length - 1} onClick={() => moveBy(id, 1)}><ArrowDown size={19} /></button></div></li>; })}</ol><p className="order-announcement" aria-live="polite">{announcement}</p>{completed && <div className="journey-feedback"><h3>The path through the archive</h3><p>{TIMELINE_EVENTS.map(event => `${event.year}: ${event.title}`).join(" → ")}</p></div>}<ActionButton secondary onClick={() => review({ section: "timeline" })}>Review the timeline<BookOpen size={18} /></ActionButton></section>;
+  return <section className="journey-panel order-challenge"><h2>From earliest to latest</h2><p>On a laptop, drag an event row. On touch screens, drag its handle. Arrow buttons remain available for precise and keyboard-friendly moves. Dates appear after you check your sequence.</p><ol ref={listRef}>{order.map((id, i) => { const event = TIMELINE_EVENTS.find(item => item.id === id); return <li data-order-event-id={id} className={`${draggingId === id ? "is-dragging" : ""} ${completed ? "is-locked" : ""}`} key={id} onPointerDown={pointerEvent => beginDrag(pointerEvent, id)} onPointerMove={drag} onPointerUp={endDrag} onPointerCancel={endDrag}><span className={`order-drag-handle ${completed ? "is-disabled" : ""}`} aria-hidden="true"><DotsSixVertical size={23} weight="bold" /></span><span className="order-index">{i + 1}</span><div className="order-event-copy"><strong>{event.title}</strong>{completed && <small>{event.year} · {TIMELINE_EVENTS[i].id === id ? "Correct position" : `Correct position: ${TIMELINE_EVENTS.findIndex(item => item.id === id) + 1}`}</small>}</div><div className="order-controls"><button type="button" aria-label={`Move ${event.title} earlier`} disabled={completed || i === 0} onClick={() => moveBy(id, -1)}><ArrowUp size={19} /></button><button type="button" aria-label={`Move ${event.title} later`} disabled={completed || i === order.length - 1} onClick={() => moveBy(id, 1)}><ArrowDown size={19} /></button></div></li>; })}</ol><p className="order-announcement" aria-live="polite">{announcement}</p>{completed && <div className="journey-feedback"><h3>The path through the archive</h3><p>{TIMELINE_EVENTS.map(event => `${event.year}: ${event.title}`).join(" → ")}</p></div>}<ActionButton secondary onClick={() => review({ section: "timeline" })}>Review the timeline<BookOpen size={18} /></ActionButton></section>;
 }
 
 function ChallengeDetail({ challenge: c, state, dispatch, onOpenContent, onProgress }) {
