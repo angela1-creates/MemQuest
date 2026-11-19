@@ -538,9 +538,11 @@ People 的当前人物是 Samuel Adams、Thomas Hutchinson、George Hewes、John
 
 ### 7.8 全局 Challenges 和 Progress
 
-Challenges 保留港口调查、事件排序、人物视角和证据推理，并在其上加入四项事件任务。可以按时代、技能和完成状态筛选；跳到资料页再返回时，应保留挑战进度、线索、提示、答案和排序。
+Challenges 保留港口调查、事件排序、人物视角和证据推理，并加入 History Time Travelers。可以按时代、技能和完成状态筛选；跳到资料页再返回时，应保留挑战进度、线索、提示、预测、答案和排序。
 
-当前本地版本还加入了 **History Time Travelers**：Stamp Act、Boston Massacre、Boston Tea Party、First Continental Congress 各有一项可续做任务。每项任务要求先进入真实的 Timeline / People / Evidence 资料，再返回记录两条隐藏线索；普通模式可逐级打开三层提示，Challenge mode 会隐藏提示。完成两道知识题后获得一张档案式收藏物。四张收藏物都获得后，最终四事件排序题在界面中解锁。提示不自动算发现、不扣分；重试不重复增加完成数，题目表现继续使用“最近 100 次练习中每道不同题目的最新答案”规则。
+**History Time Travelers 采用两层结构。** Featured Investigation 是约 10–12 分钟的重点任务 **Why Did the Colonies Coordinate?**。学习者先预测 Tea Party 是否足以解释殖民地联合，再依次调查 Boston Tea Party、英国政府的 Coercive Acts，以及各殖民地的回应；随后把四个节点放入因果链，完成两道知识题，并解锁一段基于证据的最终解释。任务必须保留关键中间发展，不能把 Boston Tea Party 直接写成 First Continental Congress 的单一步因果；Congress 代表十二个殖民地，Georgia 没有派代表。
+
+原有四项事件任务保留为可选的 **Quick Event Files**。Stamp Act、Boston Massacre、Boston Tea Party 和 First Continental Congress 各有一项可续做的短任务：进入真实 Timeline / People / Evidence 资料，记录两条隐藏线索，完成两道知识题并获得一张档案收藏物。普通模式可逐级打开提示，Challenge mode 会隐藏提示。四事件排序题保留在 **Practice Lab**，作为可独立完成的总结练习，不再要求先收集四件收藏物。提示不自动算发现、不扣分；重试不重复增加完成数，题目表现继续使用“最近 100 次练习中每道不同题目的最新答案”规则。
 
 四张高清扫描海报位于 `src/assets/scan-posters/`。海报上方保留大号英文事件名与年份，供 OCR 使用；下方事件画面为生成式历史诠释，也为未来重新编译图片目标提供更明显的视觉特征。它们目前是本地候选素材，不等于已经通过真实手机的 OCR、三次连续图片识别或 Page anchor 验证；作品集与研究记录必须明确区分“已生成素材”和“已实机验证目标”。
 

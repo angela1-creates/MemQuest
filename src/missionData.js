@@ -5,16 +5,91 @@ export const TIME_TRAVELER_MISSION_IDS = [
   "mission-continental-congress",
 ];
 
+export const PILOT_MISSION_ID = "mission-colonial-coordination";
+
 const mission = data => ({
   ...data,
   kind: "mission",
-  duration: "4-6 min",
+  category: "event-file",
+  duration: "3-4 min",
 });
+
+export const PILOT_MISSION = {
+  id: PILOT_MISSION_ID,
+  kind: "mission",
+  category: "pilot",
+  title: "Why Did the Colonies Coordinate?",
+  description: "Build an evidence-based explanation of how punishment in Massachusetts encouraged intercolonial action in 1774.",
+  eventId: "tea-party",
+  image: "tea-party",
+  skillId: "causality",
+  duration: "10-12 min",
+  contextEventIds: ["stamp-act", "massacre", "tea-party", "congress"],
+  prediction: {
+    prompt: "Before opening the evidence, what most likely pushed colonies toward coordinated action in 1774?",
+    options: [
+      { id: "tea-alone", label: "The Tea Party immediately created colonial unity" },
+      { id: "punishment", label: "Britain's punishment of Massachusetts made the dispute feel broader" },
+      { id: "independence", label: "Britain had already recognized colonial independence" },
+    ],
+  },
+  artifact: {
+    label: "PILOT CASE RESOLVED",
+    title: "Intercolonial Coordination Case File",
+    summary: "A defended explanation connecting protest, punishment, colonial response, and coordinated action.",
+  },
+  clues: [
+    {
+      id: "tea-party-action",
+      title: "A deliberate protest",
+      prompt: "Establish what protesters targeted in Boston Harbor and what the action challenged.",
+      reveal: "Participants destroyed East India Company tea, turning a dispute over taxation, consent, and commercial privilege into a visible political action.",
+      target: { section: "evidence", evidenceId: "tea-chest" },
+      sourceLabel: "MemQuest evidence record · reconstructed tea chest",
+      hints: ["Start with the cargo, not the later punishment.", "The object is a material reconstruction.", "Open the East India Company Tea Chest record."],
+    },
+    {
+      id: "coercive-acts",
+      title: "Britain punishes Massachusetts",
+      prompt: "Identify the development between the Tea Party and the First Continental Congress.",
+      reveal: "In spring 1774 Parliament passed the Coercive Acts. Measures closed Boston Harbor and altered Massachusetts government, making punishment of one colony a concern elsewhere.",
+      sourceLabel: "U.S. National Park Service · Timeline of the Revolution",
+      sourceUrl: "https://www.nps.gov/subjects/americanrevolution/timeline.htm",
+      sourceNote: "The NPS chronology places the Tea Party in December 1773, the Coercive Acts in spring 1774, and the First Continental Congress in September 1774.",
+      hints: ["Do not jump directly from December 1773 to September 1774.", "Look for acts passed by Parliament in spring 1774.", "The missing bridge is the Coercive, or Intolerable, Acts."],
+    },
+    {
+      id: "colonial-response",
+      title: "A local crisis becomes continental",
+      prompt: "Find how colonies outside Massachusetts responded before the Congress met.",
+      reveal: "Other colonies sent aid, debated common resistance, and selected delegates. Twelve colonies ultimately sent delegates to the First Continental Congress; Georgia was not represented.",
+      sourceLabel: "Library of Congress · 1773 to 1774 timeline",
+      sourceUrl: "https://www.loc.gov/collections/continental-congress-and-constitutional-convention-from-1774-to-1789/articles-and-essays/timeline/1773-to-1774/",
+      sourceNote: "The Library of Congress records colonial protest organization, delegate selection, and attendance by twelve of the thirteen colonies.",
+      hints: ["Look beyond Boston for signs of response.", "Aid, resolutions, boycotts, and delegate selection all matter.", "The outcome was coordination, not complete unanimity."],
+    },
+  ],
+  causalMap: {
+    prompt: "Arrange the causal chain. Earlier events supplied context, but these four developments form the direct 1773-1774 sequence.",
+    initialOrder: ["colonial-response", "tea-party", "congress", "coercive-acts"],
+    steps: [
+      { id: "tea-party", label: "Boston Tea Party", date: "December 1773" },
+      { id: "coercive-acts", label: "Parliament passes the Coercive Acts", date: "Spring 1774" },
+      { id: "colonial-response", label: "Colonies organize aid and common resistance", date: "1774" },
+      { id: "congress", label: "First Continental Congress meets", date: "September 1774" },
+    ],
+  },
+  questions: [
+    { id: "pilot-evidence", skillId: "evidence", prompt: "Which evidence best supports the claim that the crisis became intercolonial?", options: [{ id: "responses", label: "Other colonies sent support, organized protest, and selected delegates" }, { id: "cargo", label: "Tea was stored in wooden chests" }, { id: "date", label: "The Tea Party occurred at night" }], answerId: "responses", explanation: "Actions outside Massachusetts show that the crisis was being interpreted and answered across colonial boundaries.", target: { section: "timeline", eventId: "congress" } },
+    { id: "pilot-conclusion", skillId: "causality", prompt: "Which conclusion is best supported by the full evidence chain?", options: [{ id: "direct", label: "The Tea Party immediately and unanimously united all thirteen colonies" }, { id: "coordination", label: "Britain's punishment of Massachusetts helped turn a local conflict into a shared reason for coordination" }, { id: "independence", label: "The Congress met after Britain recognized colonial independence" }], answerId: "coordination", explanation: "The Tea Party mattered through the response it provoked. Punishment, colonial solidarity, and organizing connected the protest to the Congress.", target: { section: "timeline", eventId: "congress" } },
+  ],
+  finalExplanation: "The Boston Tea Party did not automatically produce the First Continental Congress. Parliament's Coercive Acts transformed the dispute: closing Boston Harbor and changing Massachusetts government alarmed other colonies. Their aid, resolutions, boycotts, and delegate selection moved twelve colonies toward coordinated resistance in Philadelphia.",
+};
 
 export const TIME_TRAVELER_MISSIONS = [
   mission({
     id: "mission-stamp-act",
-    title: "Mission 01: The Stamp Act",
+    title: "Quick Event File: The Stamp Act",
     description: "Trace how a tax on printed materials became a test of political authority.",
     eventId: "stamp-act",
     image: "stamp-act",
@@ -49,7 +124,7 @@ export const TIME_TRAVELER_MISSIONS = [
   }),
   mission({
     id: "mission-boston-massacre",
-    title: "Mission 02: The Boston Massacre",
+    title: "Quick Event File: The Boston Massacre",
     description: "Separate public memory from legal proof in the event and its later trials.",
     eventId: "massacre",
     image: "massacre",
@@ -84,7 +159,7 @@ export const TIME_TRAVELER_MISSIONS = [
   }),
   mission({
     id: "mission-boston-tea-party",
-    title: "Mission 03: The Boston Tea Party",
+    title: "Quick Event File: The Boston Tea Party",
     description: "Investigate the ship and cargo behind a deliberately bounded night action.",
     eventId: "tea-party",
     image: "tea-party",
@@ -119,7 +194,7 @@ export const TIME_TRAVELER_MISSIONS = [
   }),
   mission({
     id: "mission-continental-congress",
-    title: "Mission 04: The Continental Congress",
+    title: "Quick Event File: The Continental Congress",
     description: "Follow the chain from punishment in Massachusetts to colonial coordination.",
     eventId: "congress",
     image: "congress",

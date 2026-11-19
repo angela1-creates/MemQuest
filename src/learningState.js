@@ -36,13 +36,16 @@ export function restoreLearningState(saved, legacy) {
     if (!draft || !["in-progress", "complete"].includes(draft.status)) continue;
     const answers = Object.fromEntries((c.questions ?? []).filter(q => q.options.some(o => o.id === draft.answers?.[q.id])).map(q => [q.id, draft.answers[q.id]]));
     const order = Array.isArray(draft.order) && draft.order.length === 4 && new Set(draft.order).size === 4 && draft.order.every(id => TIMELINE_EVENTS.some(e => e.id === id)) ? draft.order : c.initialOrder;
-    const expectedCount = c.kind === "order" ? 1 : (c.questions?.length ?? 0);
+    const expectedCount = c.kind === "order" ? 1 : (c.questions?.length ?? 0) + (c.causalMap ? 1 : 0);
     const lastResult = Number.isFinite(draft.lastResult?.correct) && draft.lastResult?.count === expectedCount ? { count: expectedCount, correct: Math.max(0, Math.min(expectedCount, draft.lastResult.correct)) } : null;
     const clueIds = new Set(c.clues?.map(clue => clue.id) ?? []);
     const visitedClueIds = [...new Set(Array.isArray(draft.visitedClueIds) ? draft.visitedClueIds.filter(id => clueIds.has(id)) : [])];
     const collectedClueIds = [...new Set(Array.isArray(draft.collectedClueIds) ? draft.collectedClueIds.filter(id => clueIds.has(id)) : [])];
     const hints = Object.fromEntries(Object.entries(draft.hints ?? {}).filter(([id, count]) => clueIds.has(id) && Number.isFinite(count)).map(([id, count]) => [id, Math.max(0, Math.min(c.clues.find(clue => clue.id === id).hints.length, count))]));
-    challenges[c.id] = { status: draft.status, answers, order, visitedClueIds, collectedClueIds, hints, challengeMode: Boolean(draft.challengeMode), startedAt: safeTime(draft.startedAt), completedAt: draft.completedAt ? safeTime(draft.completedAt) : null, everCompleted: Boolean(draft.everCompleted || draft.status === "complete"), lastResult };
+    const causalStepIds = c.causalMap?.steps.map(step => step.id) ?? [];
+    const causalOrder = Array.isArray(draft.causalOrder) && draft.causalOrder.length === causalStepIds.length && new Set(draft.causalOrder).size === causalStepIds.length && draft.causalOrder.every(id => causalStepIds.includes(id)) ? draft.causalOrder : c.causalMap?.initialOrder;
+    const predictionId = c.prediction?.options.some(option => option.id === draft.predictionId) ? draft.predictionId : null;
+    challenges[c.id] = { status: draft.status, answers, order, causalOrder, causalChecked: Boolean(draft.causalChecked), predictionId, visitedClueIds, collectedClueIds, hints, challengeMode: Boolean(draft.challengeMode), startedAt: safeTime(draft.startedAt), completedAt: draft.completedAt ? safeTime(draft.completedAt) : null, everCompleted: Boolean(draft.everCompleted || draft.status === "complete"), lastResult };
   }
   const attempts = Array.isArray(saved.attempts) ? saved.attempts.filter(a => validUnit(a?.unitId) && (a.source === "memory" || getChallenge(a.source)) && Array.isArray(a.results)).slice(-100).map(a => ({ ...a, at: safeTime(a.at), results: a.results.filter(r => r && typeof r.questionId === "string" && LEARNING_SKILLS.some(s => s.id === r.skillId) && typeof r.correct === "boolean") })) : [];
   const activity = Array.isArray(saved.activity) ? saved.activity.filter(a => validUnit(a?.unitId) && typeof a.label === "string" && a.target && typeof a.target === "object").slice(0, 80).map(a => ({ ...a, at: safeTime(a.at) })) : [];
@@ -140,7 +143,12 @@ export function learningReducer(state, action) {
     case "START_CHALLENGE": {
       const c = getChallenge(action.id);
       if (!c || (challengeStatus(state, c.id) === "in-progress" && !action.retry)) return state;
-      return { ...state, units: { ...state.units, [c.unitId]: state.units[c.unitId] ?? { library: initialLibraryState, startedAt: at } }, selectedChallengeId: c.id, challenges: { ...state.challenges, [c.id]: { status: "in-progress", startedAt: at, answers: {}, order: c.initialOrder, visitedClueIds: [], collectedClueIds: [], hints: {}, challengeMode: Boolean(action.challengeMode), everCompleted: Boolean(state.challenges[c.id]?.everCompleted) } } };
+      return { ...state, units: { ...state.units, [c.unitId]: state.units[c.unitId] ?? { library: initialLibraryState, startedAt: at } }, selectedChallengeId: c.id, challenges: { ...state.challenges, [c.id]: { status: "in-progress", startedAt: at, answers: {}, order: c.initialOrder, causalOrder: c.causalMap?.initialOrder, causalChecked: false, predictionId: null, visitedClueIds: [], collectedClueIds: [], hints: {}, challengeMode: Boolean(action.challengeMode), everCompleted: Boolean(state.challenges[c.id]?.everCompleted) } } };
+    }
+    case "ANSWER_MISSION_PREDICTION": {
+      const c = getChallenge(action.id), draft = state.challenges[action.id];
+      if (c?.kind !== "mission" || draft?.status !== "in-progress" || draft.predictionId || !c.prediction?.options.some(option => option.id === action.predictionId)) return state;
+      return { ...state, challenges: { ...state.challenges, [c.id]: { ...draft, predictionId: action.predictionId } } };
     }
     case "VISIT_MISSION_CLUE": {
       const c = getChallenge(action.id), draft = state.challenges[action.id];
@@ -175,13 +183,29 @@ export function learningReducer(state, action) {
       [order[index], order[target]] = [order[target], order[index]];
       return { ...state, challenges: { ...state.challenges, [action.id]: { ...draft, order } } };
     }
+    case "MOVE_CAUSAL_STEP": {
+      const c = getChallenge(action.id), draft = state.challenges[action.id];
+      if (!c?.causalMap || draft?.status !== "in-progress" || draft.causalChecked || ![-1, 1].includes(action.direction)) return state;
+      const index = draft.causalOrder?.indexOf(action.stepId) ?? -1, target = index + action.direction;
+      if (index < 0 || target < 0 || target >= draft.causalOrder.length) return state;
+      const causalOrder = [...draft.causalOrder];
+      [causalOrder[index], causalOrder[target]] = [causalOrder[target], causalOrder[index]];
+      return { ...state, challenges: { ...state.challenges, [c.id]: { ...draft, causalOrder } } };
+    }
+    case "CHECK_CAUSAL_MAP": {
+      const c = getChallenge(action.id), draft = state.challenges[action.id];
+      if (!c?.causalMap || draft?.status !== "in-progress" || !draft.predictionId || c.clues.some(clue => !draft.collectedClueIds?.includes(clue.id))) return state;
+      return { ...state, challenges: { ...state.challenges, [c.id]: { ...draft, causalChecked: true } } };
+    }
     case "SUBMIT_CHALLENGE": {
       const c = getChallenge(action.id), draft = state.challenges[action.id];
       if (!c || draft?.status !== "in-progress") return state;
       if (c.kind === "exploration" && !harborSteps(state).every(s => s.found && s.understood)) return state;
       if (c.kind === "mission" && c.clues.some(clue => !draft.collectedClueIds?.includes(clue.id))) return state;
+      if (c.prediction && !draft.predictionId) return state;
+      if (c.causalMap && !draft.causalChecked) return state;
       if (c.questions?.some(q => !draft.answers[q.id])) return state;
-      const results = c.kind === "order" ? [{ questionId: "event-sequence", skillId: "chronology", correct: TIMELINE_EVENTS.every((e, i) => draft.order[i] === e.id), target: { section: "timeline" } }] : (c.questions ?? []).map(q => ({ questionId: q.id, skillId: q.skillId, correct: draft.answers[q.id] === q.answerId, target: q.target }));
+      const results = c.kind === "order" ? [{ questionId: "event-sequence", skillId: "chronology", correct: TIMELINE_EVENTS.every((e, i) => draft.order[i] === e.id), target: { section: "timeline" } }] : [...(c.questions ?? []).map(q => ({ questionId: q.id, skillId: q.skillId, correct: draft.answers[q.id] === q.answerId, target: q.target })), ...(c.causalMap ? [{ questionId: "causal-map", skillId: "causality", correct: c.causalMap.steps.every((step, index) => draft.causalOrder[index] === step.id), target: { section: "timeline" } }] : [])];
       let next = { ...state, challenges: { ...state.challenges, [c.id]: { ...draft, status: "complete", completedAt: at, everCompleted: true, lastResult: { count: results.length, correct: results.filter(r => r.correct).length } } }, attempts: [...state.attempts, { unitId: c.unitId, source: c.id, at, results }].slice(-100) };
       return recordActivity(next, { unitId: c.unitId, label: `Completed: ${c.title}`, at, target: { challengeId: c.id } });
     }

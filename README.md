@@ -1,101 +1,55 @@
-# MemQuest --- Interactive History Learning with WebXR
+# MemQuest：WebXR 互动历史学习原型
 
-MemQuest is a mobile-first interactive history learning experience that
-combines storytelling, camera-based discovery, 3D environments, and
-WebXR.
+MemQuest 是一个以手机为主的互动历史学习体验，把历史叙事、相机发现、3D 场景和 WebXR 结合起来。
 
-The project explores a simple question:
+项目探索的问题是：**怎样让历史不只是需要记住的文字，而成为可以主动探索、判断和连接的证据？**
 
-**How might we make history feel less like something we memorize and
-more like something we can explore?**
+第一个完整学习单元是美国革命。
 
-Instead of encountering history only through text, learners can scan
-historical references, discover events and people, explore interactive
-environments, investigate evidence, and test their understanding through
-challenges.
+## 在线原型
 
-The first fully developed learning unit explores the **American
-Revolution**.
+[打开 MemQuest](https://memquest.vercel.app/)
 
-## Live Prototype
+## 核心体验
 
-[Explore MemQuest](https://webxr-test-one.vercel.app/)
+### Scan：扫描与发现
 
-## Key Experiences
+使用手机相机扫描印刷的英文历史资料。浏览器内 OCR 会把识别到的内容连接到相关事件、人物、时间线和故事。目前支持：
 
-### Scan & Discover
+- Stamp Act — 1765
+- Boston Massacre — 1770
+- Boston Tea Party — 1773
+- First Continental Congress — 1774
 
-Use a phone camera to scan printed historical references. Browser-based
-OCR connects recognized content to related events, timelines,
-characters, and stories.
+匹配成功后，相机会继续显示，并叠加 Samuel Adams 或 John Adams 的 3D 历史人物诠释。Stamp Act、Boston Massacre 和 Boston Tea Party 还可选择 Page anchor 图片姿态；它不是平面检测、持久空间锚点或任意物体识别。
 
-The current prototype recognizes:
+### Library：资料、人物与证据
 
--   Stamp Act --- 1765
--   Boston Massacre --- 1770
--   Boston Tea Party --- 1773
--   First Continental Congress --- 1774
+American Revolution 单元提供 Explore、Timeline、People、Evidence 和 Memory Check。学习者可以比较事件、人物关系、史料能支持什么，以及哪些结论不能由现有证据证明。
 
-### Meet Historical Figures
+### Boston Harbor, 1773
 
-Discover figures such as **Samuel Adams** and **John Adams** through
-animated 3D characters, profiles, narrated stories, and guided
-questions.
+在程序化 Three.js 港口中寻找四个历史线索：暗灯、东印度公司茶箱、Dartmouth 茶船和船匠斧。支持设备可进入沉浸式 VR；普通手机可使用设备方向或拖动视角。
 
-### Explore Boston Harbor, 1773
+### History Time Travelers
 
-Explore an interactive 3D environment and discover historical clues
-including:
+当前采用“一个重点调查 + 四个短任务”的两层结构：
 
-1.  A darkened lantern
-2.  An East India Company tea chest
-3.  The Dartmouth tea ship
-4.  A ship carpenter's hatchet
+- **Featured Investigation：Why Did the Colonies Coordinate?** 是约 10–12 分钟的主任务。学习者先作预测，再调查 Boston Tea Party、Coercive Acts 和各殖民地回应，随后完成因果链、两道知识题，并用证据解释为何这些发展促成了 First Continental Congress。任务明确避免把 Tea Party 直接写成 Congress 的单一步因果。
+- **Quick Event Files** 保留四个事件各自的短任务，适合快速复习或分次完成。每项含两条来源关联线索、渐进提示、两道知识题和一件档案收藏物。
+- **Challenge mode** 隐藏提示，但不改变学习得分。
+- 原有四事件排序题保留在 **Practice Lab**，作为可独立练习的总结挑战，不再用四件收藏物强制解锁。
 
-Each clue reveals its story and why it matters.
+提示不会自动产生发现或扣分；重复完成不会重复增加完成数。练习表现继续采用“最近 100 次会话中，每道不同题目的最新答案”规则。
 
-Supported devices can use immersive VR. Mobile devices can use device
-orientation, with drag controls available as a fallback.
+四张高分辨率 OCR 扫描海报位于 `src/assets/scan-posters/`。海报中的生成画面属于历史诠释；在真实手机完成 OCR、连续图片识别和 Page anchor 验证前，不应称为生产级识别目标。
 
-### Timeline
+## 信息架构
 
-Explore major events chronologically and see how they connect through
-cause and effect.
-
-### People & Evidence
-
-Discover historical figures, relationships, historical evidence, and
-different perspectives surrounding key events.
-
-### Memory Check
-
-Review chronology, historical perspectives, evidence, and
-cause-and-effect relationships through a short interactive assessment.
-
-### Challenges & Progress
-
-Complete investigations, ordering challenges, perspective questions,
-evidence reasoning, and memory checks while tracking learning progress.
-
-The **History Time Travelers** mission path turns the four supported
-American Revolution events into short investigations. Each mission asks
-learners to open real Timeline, People, or Evidence records, recover two
-hidden clues, use optional progressive hints, complete two recall
-questions, and collect an archive artifact. An optional challenge mode
-hides hints. Recovering all four artifacts unlocks the final timeline
-ordering puzzle.
-
-Printable high-resolution OCR posters for the four events are stored in
-`src/assets/scan-posters/`. Their generated scenes are historical
-interpretations; camera OCR and image-target tracking still require
-verification on real devices.
-
-## Experience Structure
-
-``` text
+```text
 MemQuest
 ├── Scan
-│   └── Camera → OCR → Event → Character / Timeline
+│   └── Camera → OCR / image search → Event → Character / Timeline
 ├── Library
 │   └── American Revolution
 │       ├── Explore
@@ -104,108 +58,61 @@ MemQuest
 │       ├── Evidence
 │       └── Memory Check
 ├── Challenges
+│   ├── Featured Investigation
+│   ├── Quick Event Files
+│   └── Practice Lab
 └── Progress
 ```
 
-The American Revolution is currently the first complete unit. Ancient
-China, Silk Road Civilizations, and World War II are represented as
-future content areas.
+Ancient China、Silk Road Civilizations 和 World War II 目前只是未来内容预览，不计入学习总数。
 
-## Technology
+## 技术栈
 
--   React 19 + Vite 6
--   Three.js + WebXR
--   Tesseract.js 7 for browser-based OCR
--   Locally hosted pre-generated narration
--   React state + versioned localStorage
--   Vercel deployment
+- React 19 + Vite 6
+- Three.js + WebXR
+- Tesseract.js 7 浏览器内 OCR
+- 本地预生成旁白
+- React state + 带版本的 localStorage
+- Vercel 部署
 
-The prototype does not require a production backend or runtime API keys.
+当前原型不需要生产后端或运行时 API key。
 
-## Run Locally
+## 本地运行
 
-### Requirements
+推荐 Node.js 24.x。Windows 默认使用项目内 PowerShell 启动器，它不要求 Corepack 向 Program Files 写入文件。
 
--   Node.js 24.x recommended
--   Windows PowerShell 5.1+ for the included project launcher
--   A camera-enabled browser for Scan features
--   HTTPS for camera, device-orientation, and WebXR testing on physical
-    mobile devices
-
-### Windows
-
-From the project root:
-
-``` powershell
+```powershell
 .\scripts\project.ps1 install
 .\scripts\project.ps1 dev
 ```
 
-Then open:
+本地地址：`http://127.0.0.1:4173/`
 
-`http://localhost:4173/`
+如果已经配置 pnpm，也可以运行：
 
-### pnpm
-
-If pnpm is already configured:
-
-``` bash
+```bash
 pnpm install --frozen-lockfile
 pnpm dev --host 0.0.0.0 --port 4173 --strictPort
 ```
 
-## Test & Build
+## 测试与构建
 
-``` powershell
+```powershell
 .\scripts\project.ps1 test
 .\scripts\project.ps1 build
 .\scripts\project.ps1 test:sites
 ```
 
-Recommended viewport checks:
+建议检查 390×844 手机竖屏、844×390 手机横屏和 1254×960 桌面/平板布局。自动化测试不能替代真机测试；相机权限、OCR、音频、设备方向、触控和 XR 都应在目标手机上验证。
 
--   390 × 844 --- mobile portrait
--   844 × 390 --- mobile landscape
--   1254 × 960 --- desktop/tablet
+## 隐私与当前边界
 
-Automated tests do not replace testing on real devices. Camera
-permissions, OCR, audio, device orientation, touch interactions, and XR
-behavior should also be verified on supported phones.
+- 没有账号、云端数据库、排行榜或云端进度同步。
+- 学习记录只保存在当前浏览器；相机画面和 OCR 文本不会持久保存。
+- OCR 只识别已配置的英文美国革命事件。
+- 角色问答使用预设按钮和预生成音频，不是实时 AI 对话。
+- 图片锚定依赖已配置参考图，不是任意物体识别或持久空间锚点。
+- 3D 场景、角色和生成式历史画面是教育原型中的历史诠释，不是精确复原。
+- WebXR 和设备方向能力会因浏览器和设备而异。
 
-## Privacy
-
-MemQuest currently has no user accounts, cloud database, leaderboard, or
-cloud progress synchronization.
-
-Learning progress is stored locally in the browser. Camera frames and
-recognized OCR text are not persisted.
-
-## Current Scope
-
-MemQuest is an evolving prototype. Current limitations include:
-
--   OCR recognizes only configured printed English historical events.
--   The American Revolution is the only fully developed learning unit.
--   Character dialogue uses predefined questions and audio rather than
-    real-time AI conversation.
--   Image anchoring uses configured reference images rather than
-    arbitrary object recognition or persistent spatial anchors.
--   3D scenes and generated historical imagery are educational prototype
-    interpretations, not exact historical reconstructions.
--   WebXR and device-orientation capabilities vary by browser and
-    device.
-
-## Design Direction
-
-MemQuest brings together **history, storytelling, interaction design,
-and immersive technology** to explore how historical learning can become
-more active, visual, and memorable.
-
-Future iterations can expand the experience to additional historical
-periods, richer interactions, and new forms of spatial storytelling.
-
-------------------------------------------------------------------------
-
-**MemQuest**\
-Interactive history learning through storytelling, exploration, and
-immersive technology.
+更详细的功能边界、协作流程、截图和作品集说明见 [docs/HANDOFF.zh-CN.md](docs/HANDOFF.zh-CN.md)。扩展事件、参考目标、角色、动画和音频时，请先读 [docs/EXTENDING.zh-CN.md](docs/EXTENDING.zh-CN.md)。

@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { CHALLENGES, LEARNING_CATALOG, REVOLUTION_UNIT_ID as unitId, getChallenge } from "../src/learningData.js";
 import { challengeStatus, challengeUnlocked, getRecommendation, getUnitSummary, harborSteps, initialLearningState, learningReducer, loadLearningState, LEARNING_STORAGE_KEY, restoreLearningState, skillResults, unitLibrary } from "../src/learningState.js";
-import { TIME_TRAVELER_MISSION_IDS } from "../src/missionData.js";
+import { PILOT_MISSION_ID } from "../src/missionData.js";
 import { MEMORY_QUESTIONS, REVOLUTION_EVIDENCE, REVOLUTION_PEOPLE } from "../src/revolutionData.js";
 import { TIMELINE_EVENTS } from "../src/scanData.js";
 import { HARBOR_CLUES } from "../src/libraryData.js";
@@ -99,15 +99,35 @@ test("missions require source visits, collected clues, and both knowledge answer
   assert.equal(state.attempts.at(-1).results.length, 2);
 });
 
-test("challenge mode disables hints and the finale unlocks only after all mission artifacts", () => {
+test("challenge mode disables hints while chronology practice remains independently available", () => {
   const id = "mission-boston-massacre";
   let state = send(initialLearningState, { type: "START_CHALLENGE", id, challengeMode: true });
   const clueId = getChallenge(id).clues[0].id;
   assert.equal(send(state, { type: "REQUEST_MISSION_HINT", id, clueId }), state);
-  const finale = getChallenge("order-events");
-  assert.equal(challengeUnlocked(state, finale), false);
-  state = { ...state, challenges: { ...state.challenges, ...Object.fromEntries(TIME_TRAVELER_MISSION_IDS.map(missionId => [missionId, { status: "complete", everCompleted: true }])) } };
-  assert.equal(challengeUnlocked(state, finale), true);
+  assert.equal(challengeUnlocked(state, getChallenge("order-events")), true);
+});
+
+test("pilot records a prediction, evidence inquiry, causal map, and defended conclusion", () => {
+  const id = PILOT_MISSION_ID;
+  const mission = getChallenge(id);
+  let state = send(initialLearningState, { type: "START_CHALLENGE", id });
+  assert.equal(send(state, { type: "CHECK_CAUSAL_MAP", id }), state, "the causal map stays locked before prediction and evidence");
+  state = send(state, { type: "ANSWER_MISSION_PREDICTION", id, predictionId: "tea-alone" });
+  for (const clue of mission.clues) {
+    state = send(state, { type: "VISIT_MISSION_CLUE", id, clueId: clue.id });
+    state = send(state, { type: "COLLECT_MISSION_CLUE", id, clueId: clue.id });
+  }
+  state = send(state, { type: "MOVE_CAUSAL_STEP", id, stepId: "tea-party", direction: -1 });
+  state = send(state, { type: "MOVE_CAUSAL_STEP", id, stepId: "coercive-acts", direction: -1 });
+  state = send(state, { type: "MOVE_CAUSAL_STEP", id, stepId: "coercive-acts", direction: -1 });
+  assert.deepEqual(state.challenges[id].causalOrder, mission.causalMap.steps.map(step => step.id));
+  state = send(state, { type: "CHECK_CAUSAL_MAP", id });
+  for (const question of mission.questions) state = send(state, { type: "ANSWER_CHALLENGE", id, questionId: question.id, answerId: question.answerId });
+  state = send(state, { type: "SUBMIT_CHALLENGE", id });
+  assert.equal(challengeStatus(state, id), "complete");
+  assert.equal(state.challenges[id].predictionId, "tea-alone", "the opening misconception is retained for reflection");
+  assert.equal(state.challenges[id].lastResult.correct, 3);
+  assert.equal(state.attempts.at(-1).results.length, 3, "the causal map counts as one question");
 });
 test("chronology arrows reorder without duplication and score the actual submitted order", () => {
   let state = send(initialLearningState, { type: "START_CHALLENGE", id: "order-events" });
