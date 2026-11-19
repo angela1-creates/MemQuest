@@ -116,7 +116,7 @@ function RevolutionOverview({ state, dispatch, onHome }) {
     <section className="revolution-overview" aria-label="American Revolution unit">
       <aside className="revolution-sidebar">
         <button type="button" className="revolution-brand workspace-brand-home" onClick={onHome}><span><Sparkle size={19} weight="fill" /></span><div className="workspace-brand-copy"><strong>MemQuest</strong><small><House size={13} /> Home</small></div></button>
-        <button type="button" className="revolution-back" onClick={() => dispatch({ type: "BACK_HOME" })}><ArrowLeft size={18} /> All eras</button>
+        <button type="button" className="revolution-back" onClick={() => dispatch({ type: "BACK_HOME" })}><ArrowLeft size={18} /> Back to Library</button>
         <UnitNavigation activeSection={activeSection} dispatch={dispatch} />
         <div className="revolution-sidebar-progress"><span>UNIT EXPLORATION: {progress}%</span><div><i style={{ width: `${progress}%` }} /></div></div>
       </aside>

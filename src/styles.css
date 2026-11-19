@@ -3446,7 +3446,7 @@ button {
   margin: 0 auto 24px;
 }
 
-.timeline-unit-view .unit-section-header {
+.unit-section-header {
   margin-bottom: clamp(30px, 4vh, 42px);
   padding-bottom: 22px;
   border-bottom: 1px solid rgba(169, 190, 230, 0.12);
@@ -4372,7 +4372,7 @@ button {
     margin-bottom: 16px;
   }
 
-  .timeline-unit-view .unit-section-header {
+  .unit-section-header {
     margin-bottom: 24px;
     padding-bottom: 18px;
   }

@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from "react";
 import {
   ArrowRight,
   ArrowsLeftRight,
-  ChartLineUp,
   Check,
   CheckCircle,
   CheckSquare,
@@ -13,9 +12,9 @@ import {
   MapTrifold,
   Pause,
   SpeakerHigh,
-  UsersThree,
 } from "@phosphor-icons/react";
 import { PeopleView } from "./PeopleView.jsx";
+import { UnitSectionHeader } from "./UnitSectionHeader.jsx";
 import revolutionPeopleTriptych from "./assets/archive/revolution-people-triptych.jpg";
 import evidenceArchiveImage from "./assets/archive/tea-party-evidence-table.jpg";
 import stampActImage from "./assets/timeline/stamp-act-1765.webp";
@@ -71,52 +70,6 @@ const MEMORY_BACKGROUNDS = Object.freeze({
   people: revolutionPeopleTriptych,
   evidence: evidenceArchiveImage,
 });
-
-const SECTION_META = Object.freeze({
-  timeline: {
-    kicker: "CHRONOLOGY / CAUSE AND EFFECT",
-    title: "Timeline of a Revolution",
-    description: "Move through four turning points, then reveal how one crisis shaped the next.",
-    Icon: ChartLineUp,
-  },
-  people: {
-    kicker: "PEOPLE / PERSPECTIVE",
-    title: "People in the Conflict",
-    description: "Compare the goals and pressures that placed neighbors on different sides of imperial rule.",
-    Icon: UsersThree,
-  },
-  evidence: {
-    kicker: "ARCHIVE / SOURCE REASONING",
-    title: "Evidence Room",
-    description: "Inspect what each source can support, and what it cannot prove on its own.",
-    Icon: FolderOpen,
-  },
-  memory: {
-    kicker: "UNIT REVIEW / SYNTHESIS",
-    title: "Reconstruct the Argument",
-    description: "Complete a five-question end-of-unit assessment using chronology, perspective, and evidence.",
-    Icon: CheckSquare,
-  },
-});
-
-function SectionHeader({ section, trailing }) {
-  const meta = SECTION_META[section];
-  const Icon = meta.Icon;
-  return (
-    <header className="unit-section-header">
-      <div className="unit-section-title">
-        <span className="unit-section-icon"><Icon size={24} weight="duotone" /></span>
-        <div>
-          <span className="unit-context-title">American Revolution · The Road to Independence</span>
-          <small>{meta.kicker}</small>
-          <h1 id={`unit-${section}-title`}>{meta.title}</h1>
-          <p>{meta.description}</p>
-        </div>
-      </div>
-      {trailing}
-    </header>
-  );
-}
 
 function useTimelineAudio() {
   const audioRef = useRef(null);
@@ -193,7 +146,7 @@ function TimelineView({ state, dispatch, onEnterHarbor }) {
 
   return (
     <section className="unit-view timeline-unit-view" aria-labelledby="unit-timeline-title">
-      <SectionHeader
+      <UnitSectionHeader
         section="timeline"
         trailing={(
           <div className="unit-mode-switch" aria-label="Timeline display mode">
@@ -298,7 +251,7 @@ function EvidenceView({ state, dispatch, onEnterHarbor }) {
 
   return (
     <section className="unit-view evidence-unit-view" aria-labelledby="unit-evidence-title">
-      <SectionHeader
+      <UnitSectionHeader
         section="evidence"
         trailing={<span className="unit-count-pill"><FolderOpen size={17} /> {state.reviewedEvidenceIds.length} / {REVOLUTION_EVIDENCE.length} reviewed</span>}
       />
@@ -401,7 +354,7 @@ function MemoryCheckView({ state, dispatch }) {
   if (memory.status === "idle") {
     return (
       <section className="unit-view memory-unit-view" aria-labelledby="unit-memory-title">
-        <SectionHeader section="memory" trailing={<span className="unit-count-pill"><ClockCounterClockwise size={17} /> About 5 minutes</span>} />
+        <UnitSectionHeader section="memory" trailing={<span className="unit-count-pill"><ClockCounterClockwise size={17} /> About 5 minutes</span>} />
         <div className="unit-memory-intro glass-surface">
           <div className="unit-memory-art">
             <img src={evidenceArchiveImage} alt="Tea Party evidence arranged on an archive table" decoding="async" />
@@ -425,7 +378,7 @@ function MemoryCheckView({ state, dispatch }) {
     const passed = memory.score >= 80;
     return (
       <section className="unit-view memory-unit-view" aria-labelledby="unit-memory-title">
-        <SectionHeader section="memory" trailing={<span className="unit-count-pill"><CheckCircle size={17} /> Best {memory.bestScore}%</span>} />
+        <UnitSectionHeader section="memory" trailing={<span className="unit-count-pill"><CheckCircle size={17} /> Best {memory.bestScore}%</span>} />
         <div className="unit-memory-result glass-surface">
           <div className="unit-memory-art is-result">
             <img src={bostonTeaPartyImage} alt="Illustrated Boston Tea Party scene" decoding="async" />
@@ -454,7 +407,7 @@ function MemoryCheckView({ state, dispatch }) {
 
   return (
     <section className="unit-view memory-unit-view" aria-labelledby="unit-memory-title">
-      <SectionHeader section="memory" trailing={<span className="unit-count-pill">Question {memory.currentIndex + 1} / {MEMORY_QUESTIONS.length}</span>} />
+      <UnitSectionHeader section="memory" trailing={<span className="unit-count-pill">Question {memory.currentIndex + 1} / {MEMORY_QUESTIONS.length}</span>} />
       <div className="unit-question-shell">
         <div className="unit-question-progress" aria-hidden="true"><span style={{ width: `${((memory.currentIndex + 1) / MEMORY_QUESTIONS.length) * 100}%` }} /></div>
         <article className="unit-question-card glass-surface" style={{ "--question-image": `url(${questionImage})` }}>

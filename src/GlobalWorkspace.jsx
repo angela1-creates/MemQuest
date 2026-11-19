@@ -86,7 +86,18 @@ function MissionInvestigation({ challenge: c, draft, completed, dispatch, review
   const causalReady = !c.causalMap || c.clues.every(clue => collected.includes(clue.id));
   const evidenceCorrect = draft.causalEvidenceId === c.causalReasoning?.evidenceAnswerId;
   const explanationCorrect = draft.causalExplanationId === c.causalReasoning?.explanationAnswerId;
+  const phases = [
+    { label: "Predict", complete: Boolean(!c.prediction || draft.predictionId) },
+    { label: "Recover evidence", complete: c.clues.every(clue => collected.includes(clue.id)), detail: `${collected.length}/${c.clues.length}` },
+    { label: "Build the chain", complete: Boolean(!c.causalMap || draft.causalChecked) },
+    { label: "Defend the claim", complete: Boolean(!c.causalReasoning || draft.causalReasoningResolved) },
+    { label: "Unlock artifact", complete: completed },
+  ];
   return <>
+    <section className="mission-phase-rail" aria-label="Investigation progress">
+      <div><small>CASE FILE PROGRESS</small><strong>{completed ? c.artifact.title : "Artifact locked"}</strong></div>
+      <ol>{phases.map((phase, index) => <li key={phase.label} className={phase.complete ? "is-complete" : index === phases.findIndex(item => !item.complete) ? "is-current" : ""}><span>{phase.complete ? <Check size={14} weight="bold" /> : index + 1}</span><small>{phase.label}{phase.detail ? ` · ${phase.detail}` : ""}</small></li>)}</ol>
+    </section>
     {c.priorContext && <aside className="mission-prior-context"><Clock size={22} /><div><h2>{c.priorContext.title}</h2><p>{c.priorContext.text}</p><a href={c.priorContext.sourceUrl} target="_blank" rel="noreferrer">{c.priorContext.sourceLabel}</a></div></aside>}
     {c.contextEventIds && <section className="mission-context" aria-label="Four-event historical context">{c.contextEventIds.map((id, index) => { const event = TIMELINE_EVENTS.find(item => item.id === id); return <div key={id}><small>{event.year}</small><strong>{event.title}</strong>{index < c.contextEventIds.length - 1 && <ArrowRight size={15} />}</div>; })}</section>}
     {c.prediction && <section className="journey-panel mission-prediction"><h2>1. Predict: {c.prediction.prompt}</h2><div className="challenge-options">{c.prediction.options.map(option => <button type="button" key={option.id} disabled={Boolean(draft.predictionId) || completed} className={draft.predictionId === option.id ? "is-selected" : ""} aria-pressed={draft.predictionId === option.id} onClick={() => dispatch({ type: "ANSWER_MISSION_PREDICTION", id: c.id, predictionId: option.id })}><span>{option.label}</span>{draft.predictionId === option.id && <Check size={20} />}</button>)}</div>{prediction && <p className="mission-prediction-note">Prediction recorded. You will revisit it after building the evidence chain.</p>}</section>}
@@ -95,15 +106,19 @@ function MissionInvestigation({ challenge: c, draft, completed, dispatch, review
       const visited = draft.visitedClueIds?.includes(clue.id);
       const found = collected.includes(clue.id);
       const hintCount = draft.hints?.[clue.id] ?? 0;
+      const canOpen = !completed && (!c.prediction || Boolean(draft.predictionId));
       return <article className={`journey-panel mission-clue ${visited ? "is-examined" : ""} ${found ? "is-found" : ""}`} key={clue.id}>
-        <div className="mission-clue-status"><span>Evidence file {String(c.clues.indexOf(clue) + 1).padStart(2, "0")}</span><small>{found ? "Collected" : visited ? "Examined" : "Unopened"}</small></div>
-        <header><h3>{found ? clue.title : "Hidden clue"}</h3>{found ? <CheckCircle size={24} weight="duotone" /> : visited ? <BookOpen size={24} /> : <Target size={24} />}</header>
-        <p>{found ? clue.reveal : clue.prompt}</p>
+        <button type="button" className="mission-clue-open" disabled={!canOpen || found} aria-expanded={visited} onClick={() => dispatch({ type: "VISIT_MISSION_CLUE", id: c.id, clueId: clue.id })}>
+          <span className="mission-clue-status"><span>Evidence file {String(c.clues.indexOf(clue) + 1).padStart(2, "0")}</span><small>{found ? "Collected" : visited ? "Opened" : "Sealed"}</small></span>
+          <span className="mission-clue-heading"><strong>{found || visited ? clue.title : "Hidden clue"}</strong>{found ? <CheckCircle size={24} weight="duotone" /> : visited ? <BookOpen size={24} /> : <Target size={24} />}</span>
+          <span className="mission-clue-prompt">{found ? clue.reveal : visited ? "Source opened. Examine the record below, then add it to your case file." : clue.prompt}</span>
+          {!visited && !found && <span className="mission-clue-cta">Open evidence file <ArrowRight size={15} /></span>}
+        </button>
         {!found && !completed && <>
           {!draft.challengeMode && <div className="mission-hints">{clue.hints.slice(0, hintCount).map((hint, hintIndex) => <p key={hint}><Lightbulb size={15} />Hint {hintIndex + 1}: {hint}</p>)}<button type="button" disabled={hintCount >= clue.hints.length} onClick={() => dispatch({ type: "REQUEST_MISSION_HINT", id: c.id, clueId: clue.id })}><Lightbulb size={17} />{hintCount ? "Reveal next hint" : "Use a hint"}</button></div>}
           {visited && clue.sourceNote && <div className="mission-source-note"><cite>{clue.sourceLabel}</cite><p>{clue.sourceNote}</p>{clue.sourceUrl && <a href={clue.sourceUrl} target="_blank" rel="noreferrer">View original source</a>}</div>}
-          <div className="mission-clue-actions"><ActionButton secondary disabled={Boolean(c.prediction) && !draft.predictionId} onClick={() => { dispatch({ type: "VISIT_MISSION_CLUE", id: c.id, clueId: clue.id }); if (clue.target) review(clue.target); }}><BookOpen size={17} />{visited ? "Review source" : "Investigate source"}</ActionButton><ActionButton disabled={!visited} onClick={() => dispatch({ type: "COLLECT_MISSION_CLUE", id: c.id, clueId: clue.id })}><Archive size={17} />Record clue</ActionButton></div>
-          {!draft.predictionId && c.prediction ? <small>Record your prediction before opening evidence.</small> : !visited && <small>Investigate the source before recording this clue.</small>}
+          <div className="mission-clue-actions">{visited && clue.target && <ActionButton secondary onClick={() => review(clue.target)}><BookOpen size={17} />Open full Library record</ActionButton>}<ActionButton disabled={!visited} onClick={() => dispatch({ type: "COLLECT_MISSION_CLUE", id: c.id, clueId: clue.id })}><Archive size={17} />Add to case file</ActionButton></div>
+          {!draft.predictionId && c.prediction ? <small>Record your prediction to unseal the evidence files.</small> : !visited && <small>Open the evidence file before adding this clue.</small>}
         </>}
       </article>;
     })}</div>

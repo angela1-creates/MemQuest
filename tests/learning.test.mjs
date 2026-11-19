@@ -143,6 +143,21 @@ test("pilot records a prediction, evidence inquiry, causal map, and defended con
   assert.equal(state.attempts.at(-1).results.length, 3, "the optional AP-style response does not alter the pilot score");
 });
 
+test("pilot evidence opens and collects in place without changing Library context", () => {
+  const id = PILOT_MISSION_ID;
+  const clueId = getChallenge(id).clues[0].id;
+  let state = send(initialLearningState, { type: "START_CHALLENGE", id });
+  state = send(state, { type: "ANSWER_MISSION_PREDICTION", id, predictionId: "punishment" });
+  const stage = unitLibrary(state).stage;
+  const section = unitLibrary(state).activeSection;
+  state = send(state, { type: "VISIT_MISSION_CLUE", id, clueId });
+  assert.deepEqual(state.challenges[id].visitedClueIds, [clueId]);
+  assert.equal(unitLibrary(state).stage, stage);
+  assert.equal(unitLibrary(state).activeSection, section);
+  state = send(state, { type: "COLLECT_MISSION_CLUE", id, clueId });
+  assert.deepEqual(state.challenges[id].collectedClueIds, [clueId]);
+});
+
 test("pilot interruption restores evidence reasoning without inventing old-save progress", () => {
   const id = PILOT_MISSION_ID;
   const mission = getChallenge(id);

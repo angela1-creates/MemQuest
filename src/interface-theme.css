@@ -99,18 +99,13 @@ button:focus-visible, select:focus-visible, summary:focus-visible, a:focus-visib
 }
 .journey-intro h1 { font-size: clamp(34px, 4vw, 52px); }
 .journey-intro p, .library-hero p, .unit-section-title p { color: var(--mq-muted); line-height: 1.6; }
-.unit-section-title h1 { font-size: clamp(1.8rem, 2.8vw, 2.8rem); }
-.unit-section-title p { font-size: .85rem; }
-.timeline-unit-view .unit-section-title h1 {
-  margin-top: 6px;
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: clamp(1.55rem, 2.05vw, 2.1rem);
-  font-weight: 400;
-  letter-spacing: -.025em;
-  line-height: 1.08;
-  white-space: nowrap;
+.unit-section-title h1 {
+  margin-top: 6px; font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(1.55rem, 2.05vw, 2.1rem); font-weight: 400;
+  letter-spacing: -.025em; line-height: 1.08; white-space: nowrap;
 }
-.timeline-unit-view .unit-section-title p { max-width: 590px; margin-top: 10px; }
+.unit-section-title p { font-size: .85rem; }
+.unit-section-title p { max-width: 590px; margin-top: 10px; }
 .unit-section-icon, .instruction-icon { color: var(--mq-gold); background: var(--mq-gold-soft); box-shadow: none; border-radius: 12px; }
 .unit-section-title small, .journey-eyebrow, .library-hero-kicker, .people-archive-heading > span {
   color: var(--mq-gold); letter-spacing: .1em; font-weight: 650;
@@ -238,7 +233,7 @@ button:focus-visible, select:focus-visible, summary:focus-visible, a:focus-visib
   .library-era-card { min-height: 300px; padding: 22px; }
   .library-era-grid { gap: 14px; margin-top: 24px; }
   .unit-section-title p { font-size: .8rem; }
-  .timeline-unit-view .unit-section-title h1 { font-size: 1.5rem; }
+  .unit-section-title h1 { font-size: 1.5rem; }
   .unit-evidence-toolbar { align-items: flex-start; flex-direction: column; gap: 16px; }
   .unit-evidence-toolbar .unit-evidence-filters { width: 100%; }
   .evidence-unit-view .unit-evidence-layout { grid-template-columns: 1fr; gap: 20px; }
