@@ -187,6 +187,15 @@ export function learningReducer(state, action) {
       [order[index], order[target]] = [order[target], order[index]];
       return { ...state, challenges: { ...state.challenges, [action.id]: { ...draft, order } } };
     }
+    case "MOVE_EVENT_TO_INDEX": {
+      const draft = state.challenges[action.id];
+      if (draft?.status !== "in-progress" || !draft.order || !Number.isInteger(action.targetIndex) || action.targetIndex < 0 || action.targetIndex >= draft.order.length) return state;
+      const index = draft.order.indexOf(action.eventId);
+      if (index < 0 || index === action.targetIndex) return state;
+      const order = [...draft.order];
+      order.splice(action.targetIndex, 0, order.splice(index, 1)[0]);
+      return { ...state, challenges: { ...state.challenges, [action.id]: { ...draft, order } } };
+    }
     case "MOVE_CAUSAL_STEP": {
       const c = getChallenge(action.id), draft = state.challenges[action.id];
       if (!c?.causalMap || draft?.status !== "in-progress" || draft.causalChecked || ![-1, 1].includes(action.direction)) return state;

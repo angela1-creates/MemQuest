@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Archive, ArrowDown, ArrowLeft, ArrowRight, ArrowUp, BookOpen, Check, CheckCircle, Clock, Compass, Flag, House, Lightbulb, Lock, Medal, Sparkle, Target, TrendUp, WarningCircle } from "@phosphor-icons/react";
+import { Archive, ArrowDown, ArrowLeft, ArrowRight, ArrowUp, BookOpen, Check, CheckCircle, Clock, Compass, DotsSixVertical, Flag, House, Lightbulb, Lock, Medal, Sparkle, Target, TrendUp, WarningCircle } from "@phosphor-icons/react";
 import { CHALLENGES, LEARNING_CATALOG, LEARNING_SKILLS, REVOLUTION_UNIT_ID, getChallenge, getUnit } from "./learningData.js";
 import { challengeStatus, challengeUnlocked, getUnitSummary, harborSteps, skillResults, unitLibrary } from "./learningState.js";
 import { HARBOR_CLUES } from "./libraryData.js";
@@ -133,6 +133,56 @@ function MissionInvestigation({ challenge: c, draft, completed, dispatch, review
   </>;
 }
 
+function OrderChallenge({ challenge: c, draft, completed, dispatch, review }) {
+  const listRef = useRef(null);
+  const dragIdRef = useRef(null);
+  const order = draft.order ?? c.initialOrder;
+  const orderRef = useRef(order);
+  const [draggingId, setDraggingId] = useState(null);
+  const [announcement, setAnnouncement] = useState("");
+  orderRef.current = order;
+
+  const moveTo = (eventId, targetIndex) => {
+    const currentOrder = orderRef.current;
+    const currentIndex = currentOrder.indexOf(eventId);
+    if (currentIndex < 0 || targetIndex < 0 || targetIndex >= currentOrder.length || currentIndex === targetIndex) return;
+    const nextOrder = [...currentOrder];
+    nextOrder.splice(targetIndex, 0, nextOrder.splice(currentIndex, 1)[0]);
+    orderRef.current = nextOrder;
+    dispatch({ type: "MOVE_EVENT_TO_INDEX", id: c.id, eventId, targetIndex });
+    const event = TIMELINE_EVENTS.find(item => item.id === eventId);
+    setAnnouncement(`${event.title} moved to position ${targetIndex + 1} of ${currentOrder.length}.`);
+  };
+  const moveBy = (eventId, direction) => moveTo(eventId, orderRef.current.indexOf(eventId) + direction);
+  const beginDrag = (pointerEvent, eventId) => {
+    if (completed || (pointerEvent.pointerType === "mouse" && pointerEvent.button !== 0)) return;
+    pointerEvent.preventDefault();
+    dragIdRef.current = eventId;
+    setDraggingId(eventId);
+    pointerEvent.currentTarget.setPointerCapture?.(pointerEvent.pointerId);
+  };
+  const drag = pointerEvent => {
+    const eventId = dragIdRef.current;
+    if (!eventId || !listRef.current) return;
+    pointerEvent.preventDefault();
+    const rows = [...listRef.current.querySelectorAll("[data-order-event-id]")];
+    const closest = rows.reduce((best, row) => {
+      const distance = Math.abs(pointerEvent.clientY - (row.getBoundingClientRect().top + row.getBoundingClientRect().height / 2));
+      return !best || distance < best.distance ? { row, distance } : best;
+    }, null);
+    const targetIndex = closest ? rows.indexOf(closest.row) : -1;
+    if (targetIndex >= 0) moveTo(eventId, targetIndex);
+  };
+  const endDrag = pointerEvent => {
+    if (!dragIdRef.current) return;
+    if (pointerEvent.currentTarget.hasPointerCapture?.(pointerEvent.pointerId)) pointerEvent.currentTarget.releasePointerCapture(pointerEvent.pointerId);
+    dragIdRef.current = null;
+    setDraggingId(null);
+  };
+
+  return <section className="journey-panel order-challenge"><h2>From earliest to latest</h2><p>Drag each handle to reorder the events, or use the arrow buttons for precise and keyboard-friendly moves. Dates appear after you check your sequence.</p><ol ref={listRef}>{order.map((id, i) => { const event = TIMELINE_EVENTS.find(item => item.id === id); return <li data-order-event-id={id} className={draggingId === id ? "is-dragging" : ""} key={id}><span className={`order-drag-handle ${completed ? "is-disabled" : ""}`} aria-hidden="true" onPointerDown={pointerEvent => beginDrag(pointerEvent, id)} onPointerMove={drag} onPointerUp={endDrag} onPointerCancel={endDrag}><DotsSixVertical size={23} weight="bold" /></span><span className="order-index">{i + 1}</span><div className="order-event-copy"><strong>{event.title}</strong>{completed && <small>{event.year} · {TIMELINE_EVENTS[i].id === id ? "Correct position" : `Correct position: ${TIMELINE_EVENTS.findIndex(item => item.id === id) + 1}`}</small>}</div><div className="order-controls"><button type="button" aria-label={`Move ${event.title} earlier`} disabled={completed || i === 0} onClick={() => moveBy(id, -1)}><ArrowUp size={19} /></button><button type="button" aria-label={`Move ${event.title} later`} disabled={completed || i === order.length - 1} onClick={() => moveBy(id, 1)}><ArrowDown size={19} /></button></div></li>; })}</ol><p className="order-announcement" aria-live="polite">{announcement}</p>{completed && <div className="journey-feedback"><h3>The path through the archive</h3><p>{TIMELINE_EVENTS.map(event => `${event.year}: ${event.title}`).join(" → ")}</p></div>}<ActionButton secondary onClick={() => review({ section: "timeline" })}>Review the timeline<BookOpen size={18} /></ActionButton></section>;
+}
+
 function ChallengeDetail({ challenge: c, state, dispatch, onOpenContent, onProgress }) {
   const [challengeMode, setChallengeMode] = useState(false);
   const draft = state.challenges[c.id];
@@ -169,7 +219,7 @@ function ChallengeDetail({ challenge: c, state, dispatch, onOpenContent, onProgr
     {status === "not-started" ? <section className="journey-panel challenge-start"><Target size={32} /><h2>{c.kind === "exploration" ? "Look closely. Find the connections." : "A little practice, a deeper understanding."}</h2><p>{c.kind === "exploration" ? "Find all four harbor objects and open “Why it matters” on each object’s card. Return here to complete your investigation." : "Your first answer is recorded for each question. Review the explanation, then try again whenever you like. Repeats never add duplicate achievements."}</p><ActionButton onClick={() => start(false)}>Begin challenge<ArrowRight size={18} /></ActionButton></section> : <>
       {completed && <section className="challenge-result" role="status"><CheckCircle size={36} weight="duotone" /><div><h2>{c.kind === "exploration" ? "Investigation complete" : "Practice complete"}</h2><p>{resultSummary}</p></div><ActionButton onClick={onProgress}>View my progress<ArrowRight size={17} /></ActionButton></section>}
       {c.kind === "mission" && <MissionInvestigation challenge={c} draft={draft} completed={completed} dispatch={dispatch} review={review} />}
-      {c.kind === "exploration" ? <section className="journey-panel harbor-checklist"><div className="journey-section-title"><h2>Your field notes</h2><strong>{steps.filter(s => s.found && s.understood).length} / 4</strong></div><p>Tap objects in the 3D harbor, then read “Why it matters”. Opening the scene alone does not count.</p><div className="harbor-check-grid">{steps.map(s => <div key={s.id}><span className={s.found && s.understood ? "is-done" : ""}><CheckCircle size={25} /></span><div><h3>{HARBOR_CLUES.find(c => c.id === s.id).shortLabel}</h3><small>{!s.found ? "Not discovered" : s.understood ? "Found · Context explored" : "Found · Read why it matters"}</small></div></div>)}</div><ActionButton onClick={() => review({ section: "harbor" })}><Compass size={18} />{steps.some(s => s.found) ? "Return to the harbor" : "Enter Boston Harbor"}</ActionButton></section> : c.kind === "order" ? <section className="journey-panel order-challenge"><h2>From earliest to latest</h2><p>Use the arrows to move each event. Dates are revealed after you check your sequence.</p><ol>{(draft.order ?? c.initialOrder).map((id, i) => { const e = TIMELINE_EVENTS.find(e => e.id === id); return <li key={id}><span className="order-index">{i + 1}</span><div><strong>{e.title}</strong>{completed && <small>{e.year} · {TIMELINE_EVENTS[i].id === id ? "Correct position" : `Correct position: ${TIMELINE_EVENTS.findIndex(e => e.id === id) + 1}`}</small>}</div><div className="order-controls"><button type="button" aria-label={`Move ${e.title} earlier`} disabled={completed || i === 0} onClick={() => dispatch({ type: "MOVE_EVENT", id: c.id, eventId: id, direction: -1 })}><ArrowUp size={19} /></button><button type="button" aria-label={`Move ${e.title} later`} disabled={completed || i === 3} onClick={() => dispatch({ type: "MOVE_EVENT", id: c.id, eventId: id, direction: 1 })}><ArrowDown size={19} /></button></div></li>; })}</ol>{completed && <div className="journey-feedback"><h3>The path through the archive</h3><p>{TIMELINE_EVENTS.map(e => `${e.year}: ${e.title}`).join(" → ")}</p></div>}<ActionButton secondary onClick={() => review({ section: "timeline" })}>Review the timeline<BookOpen size={18} /></ActionButton></section> : <div className="challenge-questions">{c.questions.map((q, index) => {
+      {c.kind === "exploration" ? <section className="journey-panel harbor-checklist"><div className="journey-section-title"><h2>Your field notes</h2><strong>{steps.filter(s => s.found && s.understood).length} / 4</strong></div><p>Tap objects in the 3D harbor, then read “Why it matters”. Opening the scene alone does not count.</p><div className="harbor-check-grid">{steps.map(s => <div key={s.id}><span className={s.found && s.understood ? "is-done" : ""}><CheckCircle size={25} /></span><div><h3>{HARBOR_CLUES.find(c => c.id === s.id).shortLabel}</h3><small>{!s.found ? "Not discovered" : s.understood ? "Found · Context explored" : "Found · Read why it matters"}</small></div></div>)}</div><ActionButton onClick={() => review({ section: "harbor" })}><Compass size={18} />{steps.some(s => s.found) ? "Return to the harbor" : "Enter Boston Harbor"}</ActionButton></section> : c.kind === "order" ? <OrderChallenge challenge={c} draft={draft} completed={completed} dispatch={dispatch} review={review} /> : <div className="challenge-questions">{c.questions.map((q, index) => {
         const answer = draft.answers[q.id];
         return (!c.causalReasoning || draft.causalReasoningResolved || completed) && <section className="journey-panel challenge-question" key={q.id} aria-labelledby={`question-${q.id}`}><h2 id={`question-${q.id}`}><small>{c.category === "pilot" ? "Knowledge check" : "Question"} {index + 1} / {c.questions.length}</small>{q.prompt}</h2><div className="challenge-options">{q.options.map(o => <button type="button" key={o.id} disabled={Boolean(answer) || completed} className={answer === o.id ? o.id === q.answerId ? "is-correct" : "is-incorrect" : ""} aria-pressed={answer === o.id} onClick={() => dispatch({ type: "ANSWER_CHALLENGE", id: c.id, questionId: q.id, answerId: o.id })}><span>{o.label}</span>{answer === o.id && (o.id === q.answerId ? <Check size={20} /> : <WarningCircle size={20} />)}</button>)}</div>{answer && <div className="journey-feedback" role="status"><strong>{answer === q.answerId ? "That’s right." : "A useful distinction."}</strong><p>{q.explanation}</p><button type="button" className="journey-text-link" onClick={() => review(q.target)}>Explore the source</button></div>}</section>;
       })}</div>}

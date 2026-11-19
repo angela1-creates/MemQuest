@@ -178,10 +178,13 @@ test("pilot interruption restores evidence reasoning without inventing old-save 
   assert.equal(oldSave.challenges[id].causalReasoningAttempts, 0);
   assert.equal(oldSave.challenges[id].causalReasoningResolved, false);
 });
-test("chronology arrows reorder without duplication and score the actual submitted order", () => {
+test("chronology supports direct drag-style moves and arrow fallback without duplication", () => {
   let state = send(initialLearningState, { type: "START_CHALLENGE", id: "order-events" });
+  state = send(state, { type: "MOVE_EVENT_TO_INDEX", id: "order-events", eventId: "congress", targetIndex: 3 });
+  assert.deepEqual(state.challenges["order-events"].order, ["tea-party", "stamp-act", "massacre", "congress"]);
+  const beforeInvalidMove = state;
+  assert.equal(send(state, { type: "MOVE_EVENT_TO_INDEX", id: "order-events", eventId: "stamp-act", targetIndex: 9 }), beforeInvalidMove);
   state = send(state, { type: "MOVE_EVENT", id: "order-events", eventId: "stamp-act", direction: -1 });
-  state = send(state, { type: "MOVE_EVENT", id: "order-events", eventId: "massacre", direction: -1 });
   state = send(state, { type: "MOVE_EVENT", id: "order-events", eventId: "massacre", direction: -1 });
   assert.deepEqual(state.challenges["order-events"].order, TIMELINE_EVENTS.map(e => e.id));
   state = send(state, { type: "SUBMIT_CHALLENGE", id: "order-events" });
