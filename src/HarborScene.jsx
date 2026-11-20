@@ -1542,7 +1542,7 @@ export function HarborScene({ discoveredClueIds, selectedClueId, onDiscover, onC
         <button type="button" className="harbor-control" onClick={enableMotion} aria-pressed={viewMode === "motion"}>
           <ArrowsOut size={19} />
           <span className="harbor-control-copy">
-            <strong>{motionReady ? "Phone motion active" : viewMode === "motion-denied" ? "Motion unavailable" : "Look around with phone"}</strong>
+            <strong>{motionReady ? "Device motion active" : viewMode === "motion-denied" ? "Motion unavailable" : "Move device to look around"}</strong>
             <small>{motionReady ? "Tilt to look" : viewMode === "motion-denied" ? "Drag to look instead" : "Uses device motion"}</small>
           </span>
         </button>
@@ -1558,8 +1558,8 @@ export function HarborScene({ discoveredClueIds, selectedClueId, onDiscover, onC
           <div className="harbor-capability-note" role="status">
             <Headset size={19} weight="duotone" />
             <span className="harbor-control-copy">
-              <strong>{xrSupport === "checking" ? "Checking headset VR" : "Headset VR not supported"}</strong>
-              <small>{xrSupport === "checking" ? "Detecting this device" : "Use phone motion or drag"}</small>
+              <strong>{xrSupport === "checking" ? "Checking immersive VR" : "Immersive VR unavailable on this device"}</strong>
+              <small>{xrSupport === "checking" ? "Detecting this device" : "Open in a WebXR headset browser"}</small>
             </span>
           </div>
         )}
