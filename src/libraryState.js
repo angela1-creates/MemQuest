@@ -124,6 +124,14 @@ export function libraryReducer(state, action) {
         selectedTimelineEventId: action.eventId,
         viewedTimelineEventIds: appendUnique(state.viewedTimelineEventIds, action.eventId),
       };
+    case "OPEN_TIMELINE_EVENT":
+      if (!TIMELINE_EVENTS.some(e => e.id === action.eventId)) return state;
+      return {
+        ...state,
+        timelineMode: "events",
+        selectedTimelineEventId: action.eventId,
+        viewedTimelineEventIds: appendUnique(state.viewedTimelineEventIds, action.eventId),
+      };
     case "SELECT_CAUSE":
       return { ...state, selectedCauseId: action.causeId };
     case "SELECT_PERSON":

@@ -107,6 +107,7 @@ function applyUnitAction(state, unitId, action, at) {
   let next = { ...state, units: { ...state.units, [unitId]: { ...state.units[unitId], startedAt: state.units[unitId]?.startedAt ?? at, library: after } } };
   const tracked = {
     SELECT_TIMELINE_EVENT: ["viewedTimelineEventIds", "eventId", "Explored an event", "timeline"],
+    OPEN_TIMELINE_EVENT: ["viewedTimelineEventIds", "eventId", "Explored an event", "timeline"],
     SELECT_PERSON: ["viewedPersonIds", "personId", "Explored a perspective", "people"],
     SELECT_EVIDENCE: ["reviewedEvidenceIds", "evidenceId", "Reviewed a source", "evidence"],
     DISCOVER_CLUE: ["discoveredClueIds", "clueId", "Discovered a harbor clue", "explore"],

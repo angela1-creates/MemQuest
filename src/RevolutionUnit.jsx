@@ -141,7 +141,7 @@ function TimelineView({ state, dispatch, onEnterHarbor }) {
 
   const selectEvent = (eventId) => {
     stop();
-    dispatch({ type: "SELECT_TIMELINE_EVENT", eventId });
+    dispatch({ type: "OPEN_TIMELINE_EVENT", eventId });
   };
 
   return (

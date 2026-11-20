@@ -63,6 +63,15 @@ test("opens every American Revolution learning section and tracks unique study a
   assert.ok(calculateUnitProgress(state) > calculateUnitProgress(initialLibraryState));
 });
 
+test("opens an event detail when following a cause-and-effect link", () => {
+  let state = libraryReducer(initialLibraryState, { type: "SET_TIMELINE_MODE", mode: "causes" });
+  state = libraryReducer(state, { type: "OPEN_TIMELINE_EVENT", eventId: "congress" });
+
+  assert.equal(state.timelineMode, "events");
+  assert.equal(state.selectedTimelineEventId, "congress");
+  assert.ok(state.viewedTimelineEventIds.includes("congress"));
+});
+
 test("scores the Memory Check and preserves the best result across retries", () => {
   let state = libraryReducer(initialLibraryState, { type: "START_MEMORY" });
   for (const question of MEMORY_QUESTIONS) {
