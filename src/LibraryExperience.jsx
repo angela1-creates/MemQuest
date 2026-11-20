@@ -1,7 +1,6 @@
 import { useEffect } from "react";
 import {
   ArrowLeft,
-  BookOpen,
   ChartLineUp,
   CheckSquare,
   Compass,
@@ -61,7 +60,7 @@ function LibraryHome({ dispatch, progress, onProfile, onChallenges, onHome }) {
   return (
     <section className="library-page library-home" aria-labelledby="library-home-title">
       <header className="library-page-header">
-        <div className="library-header-leading"><button type="button" className="workspace-home-button" onClick={onHome}><House size={18} /> Home</button><div className="library-title-pill"><BookOpen size={23} weight="duotone" /><span>Library</span></div></div>
+        <div className="library-header-leading"><button type="button" className="workspace-home-button" onClick={onHome}><House size={18} /> Home</button></div>
         <button type="button" aria-label="Open learning progress" onClick={onProfile}><Sparkle size={20} weight="duotone" /></button>
       </header>
 

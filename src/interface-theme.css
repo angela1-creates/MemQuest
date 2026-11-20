@@ -253,7 +253,7 @@ button:focus-visible, select:focus-visible, summary:focus-visible, a:focus-visib
   .people-panel h2 { font-size: 1.2rem; }
 }
 @media (max-height: 620px) and (orientation: landscape) {
-  .library-home-content { margin-top: 18px; }
+  .library-home-content { margin-top: 56px; }
   .library-hero { padding-bottom: 16px; }
   .library-hero h1 { font-size: 1.8rem; max-width: 28ch; }
   .library-hero p { font-size: .8rem; margin-top: 8px; }

@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import test from "node:test";
 import { HARBOR_CLUES, LIBRARY_ERAS } from "../src/libraryData.js";
 import { TIMELINE_EVENTS } from "../src/scanData.js";
@@ -11,6 +12,17 @@ import {
   LIBRARY_STAGES,
   restoreLibraryState,
 } from "../src/libraryState.js";
+
+test("reserves space for Library navigation in mobile landscape", () => {
+  const theme = readFileSync(new URL("../src/interface-theme.css", import.meta.url), "utf8");
+  const landscapeStart = theme.indexOf("@media (max-height: 620px) and (orientation: landscape)");
+  assert.notEqual(landscapeStart, -1);
+  const nextMedia = theme.indexOf("@media", landscapeStart + 1);
+  const landscapeRules = theme.slice(landscapeStart, nextMedia === -1 ? undefined : nextMedia);
+  const margin = landscapeRules.match(/\.library-home-content\s*\{\s*margin-top:\s*(\d+)px;/);
+  assert.ok(margin, "mobile landscape must reserve space below the absolute Library header");
+  assert.ok(Number(margin[1]) >= 55, "reserved space must clear the 46px header at its 9px top offset");
+});
 
 test("opens the American Revolution overview and enters the harbor", () => {
   let state = libraryReducer(initialLibraryState, { type: "OPEN_ERA", eraId: "american-revolution" });
