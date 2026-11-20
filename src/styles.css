@@ -2672,6 +2672,7 @@ button {
   background: rgba(15, 26, 48, 0.56);
   border-color: rgba(170, 192, 234, 0.12);
   font-weight: 700;
+  cursor: default;
 }
 
 .harbor-control.is-primary {
@@ -2705,6 +2706,80 @@ button {
 
 .harbor-exit {
   color: #e9ddbc;
+}
+
+.harbor-viewpoint-tour {
+  position: absolute;
+  z-index: 5;
+  bottom: max(58px, calc(env(safe-area-inset-bottom) + 42px));
+  left: max(28px, calc(env(safe-area-inset-left) + 16px));
+  display: grid;
+  grid-template-columns: 38px minmax(150px, 1fr) auto 38px;
+  align-items: stretch;
+  min-height: 44px;
+  color: #e2e8fb;
+  background: rgba(15, 26, 48, 0.82);
+  border: 1px solid rgba(170, 192, 234, 0.18);
+  border-radius: var(--mq-control-radius, 12px);
+  box-shadow: 0 12px 28px rgba(0, 5, 13, 0.24);
+  backdrop-filter: blur(14px);
+  overflow: hidden;
+}
+
+.harbor-viewpoint-tour button {
+  display: grid;
+  place-items: center;
+  min-width: 38px;
+  color: var(--mq-gold, #e8c775);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+.harbor-viewpoint-tour button:hover:not(:disabled),
+.harbor-viewpoint-tour button:focus-visible {
+  background: rgba(232, 199, 117, 0.1);
+}
+
+.harbor-viewpoint-tour button:disabled {
+  color: rgba(226, 232, 251, 0.28);
+  cursor: default;
+}
+
+.harbor-viewpoint-tour .harbor-viewpoint-inspect {
+  min-width: 82px;
+  padding: 0 12px;
+  color: #252113;
+  background: var(--mq-gold, #e8c775);
+  font-size: 0.6rem;
+  font-weight: 850;
+}
+
+.harbor-viewpoint-tour .harbor-viewpoint-inspect:hover,
+.harbor-viewpoint-tour .harbor-viewpoint-inspect:focus-visible {
+  background: #f1d98f;
+}
+
+.harbor-viewpoint-tour > div {
+  display: grid;
+  align-content: center;
+  gap: 2px;
+  padding: 5px 10px;
+  border-inline: 1px solid rgba(170, 192, 234, 0.12);
+  text-align: center;
+}
+
+.harbor-viewpoint-tour small {
+  color: rgba(226, 232, 251, 0.54);
+  font-size: 0.5rem;
+  font-weight: 750;
+  letter-spacing: 0.1em;
+}
+
+.harbor-viewpoint-tour strong {
+  font-family: var(--mq-serif, Georgia, serif);
+  font-size: 0.74rem;
+  font-weight: 600;
 }
 
 .harbor-hint {
@@ -3087,6 +3162,12 @@ button {
     justify-content: center;
   }
 
+  .harbor-viewpoint-tour {
+    right: auto;
+    bottom: max(142px, calc(env(safe-area-inset-bottom) + 130px));
+    left: 10px;
+  }
+
   .harbor-control,
   .harbor-capability-note,
   .harbor-exit {
@@ -3348,6 +3429,11 @@ button {
     right: max(10px, env(safe-area-inset-right));
     bottom: max(10px, env(safe-area-inset-bottom));
     left: auto;
+  }
+
+  .harbor-viewpoint-tour {
+    bottom: max(54px, calc(env(safe-area-inset-bottom) + 44px));
+    left: max(10px, env(safe-area-inset-left));
   }
 
   .harbor-control,
@@ -4458,6 +4544,12 @@ button {
 }
 
 @media (max-width: 560px) and (orientation: portrait) {
+  .harbor-viewpoint-tour {
+    right: 10px;
+    bottom: max(196px, calc(env(safe-area-inset-bottom) + 184px));
+    left: 10px;
+  }
+
   .harbor-controls {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);

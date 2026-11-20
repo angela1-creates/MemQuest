@@ -2,6 +2,20 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as THREE from 'three';
 import {batchStaticHarbor, createMasonryTexture, createWaterNormalTexture, detailShip, detailWarehouse, dressWaterfront} from '../src/harborVisuals.js';
+import {HARBOR_VIEWPOINTS} from '../src/harborViewpoints.js';
+
+test('guided Harbor viewpoints cover the overview and every clue with finite camera poses',()=>{
+  assert.deepEqual(HARBOR_VIEWPOINTS.map(view=>view.id),['overview','lantern','tea-chest','ship','hatchet']);
+  for(const view of HARBOR_VIEWPOINTS){
+    assert.equal(view.position.length,3);assert.equal(view.target.length,3);
+    assert.ok([...view.position,...view.target].every(Number.isFinite));
+  }
+  assert.deepEqual(HARBOR_VIEWPOINTS.slice(1).map(view=>view.clueId),['lantern','tea-chest','ship','hatchet']);
+  for(const view of HARBOR_VIEWPOINTS.slice(1)){
+    const distance=Math.hypot(...view.position.map((value,index)=>value-view.target[index]));
+    assert.ok(distance < (view.id==='ship'?6:2.5),`${view.id} must be framed as a close-up`);
+  }
+});
 
 test('static batching preserves world bounds and leaves hit proxies, water and instances untouched',()=>{
   const scene=new THREE.Scene(),mat=new THREE.MeshStandardMaterial();
