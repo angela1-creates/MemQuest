@@ -143,6 +143,18 @@ test("pilot records a prediction, evidence inquiry, causal map, and defended con
   assert.equal(state.attempts.at(-1).results.length, 3, "the optional AP-style response does not alter the pilot score");
 });
 
+test("pilot causal chronology supports direct drag-style moves", () => {
+  const id = PILOT_MISSION_ID;
+  const mission = getChallenge(id);
+  let state = send(initialLearningState, { type: "START_CHALLENGE", id });
+
+  state = send(state, { type: "MOVE_CAUSAL_STEP_TO_INDEX", id, stepId: "tea-party", targetIndex: 0 });
+  assert.deepEqual(state.challenges[id].causalOrder, ["tea-party", "colonial-response", "congress", "coercive-acts"]);
+
+  state = send(state, { type: "MOVE_CAUSAL_STEP_TO_INDEX", id, stepId: "coercive-acts", targetIndex: 1 });
+  assert.deepEqual(state.challenges[id].causalOrder, mission.causalMap.steps.map(step => step.id));
+});
+
 test("pilot evidence opens and collects in place without changing Library context", () => {
   const id = PILOT_MISSION_ID;
   const clueId = getChallenge(id).clues[0].id;

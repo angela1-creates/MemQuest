@@ -206,6 +206,15 @@ export function learningReducer(state, action) {
       [causalOrder[index], causalOrder[target]] = [causalOrder[target], causalOrder[index]];
       return { ...state, challenges: { ...state.challenges, [c.id]: { ...draft, causalOrder } } };
     }
+    case "MOVE_CAUSAL_STEP_TO_INDEX": {
+      const c = getChallenge(action.id), draft = state.challenges[action.id];
+      if (!c?.causalMap || draft?.status !== "in-progress" || draft.causalChecked || !Number.isInteger(action.targetIndex) || action.targetIndex < 0 || action.targetIndex >= draft.causalOrder.length) return state;
+      const index = draft.causalOrder.indexOf(action.stepId);
+      if (index < 0 || index === action.targetIndex) return state;
+      const causalOrder = [...draft.causalOrder];
+      causalOrder.splice(action.targetIndex, 0, causalOrder.splice(index, 1)[0]);
+      return { ...state, challenges: { ...state.challenges, [c.id]: { ...draft, causalOrder } } };
+    }
     case "CHECK_CAUSAL_MAP": {
       const c = getChallenge(action.id), draft = state.challenges[action.id];
       if (!c?.causalMap || draft?.status !== "in-progress" || !draft.predictionId || c.clues.some(clue => !draft.collectedClueIds?.includes(clue.id))) return state;
