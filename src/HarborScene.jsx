@@ -1546,13 +1546,23 @@ export function HarborScene({ discoveredClueIds, selectedClueId, onDiscover, onC
             <small>{motionReady ? "Tilt to look" : viewMode === "motion-denied" ? "Drag to look instead" : "Uses device motion"}</small>
           </span>
         </button>
-        <button type="button" className="harbor-control is-primary" onClick={enterImmersive} disabled={xrSupport !== "supported" && viewMode !== "immersive-vr"}>
-          <Headset size={20} weight="duotone" />
-          <span className="harbor-control-copy">
-            <strong>{viewMode === "immersive-vr" ? "Immersive VR active" : xrSupport === "checking" ? "Checking VR support" : xrSupport === "supported" ? "Enter immersive VR" : "VR unavailable"}</strong>
-            <small>{xrSupport === "supported" || viewMode === "immersive-vr" ? "Headset / WebXR" : "Use phone or drag"}</small>
-          </span>
-        </button>
+        {xrSupport === "supported" || viewMode === "immersive-vr" ? (
+          <button type="button" className="harbor-control is-primary" onClick={enterImmersive}>
+            <Headset size={20} weight="duotone" />
+            <span className="harbor-control-copy">
+              <strong>{viewMode === "immersive-vr" ? "Immersive VR active" : "Enter immersive VR"}</strong>
+              <small>Headset / WebXR</small>
+            </span>
+          </button>
+        ) : (
+          <div className="harbor-capability-note" role="status">
+            <Headset size={19} weight="duotone" />
+            <span className="harbor-control-copy">
+              <strong>{xrSupport === "checking" ? "Checking headset VR" : "Headset VR not supported"}</strong>
+              <small>{xrSupport === "checking" ? "Detecting this device" : "Use phone motion or drag"}</small>
+            </span>
+          </div>
+        )}
         <button type="button" className="harbor-exit" onClick={handleExit}><ArrowLeft size={19} /> Back to Timeline</button>
       </div>
 

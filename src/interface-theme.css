@@ -282,6 +282,6 @@ button:focus-visible, select:focus-visible, summary:focus-visible, a:focus-visib
 .scan-ar-option > span { color: var(--mq-gold); background: var(--mq-gold-soft); }
 .harbor-topbar { background: rgba(9, 18, 30, .8); border-color: var(--mq-border); }
 .harbor-vr-brand > span { color: var(--mq-gold); background: var(--mq-gold-soft); border: 1px solid var(--mq-border); border-radius: 12px; }
-.harbor-control, .harbor-exit, .harbor-clue-actions button { border-radius: var(--mq-control-radius); }
+.harbor-control, .harbor-capability-note, .harbor-exit, .harbor-clue-actions button { border-radius: var(--mq-control-radius); }
 .harbor-control.is-primary, .harbor-clue-actions button.is-primary { color: #252113; background: var(--mq-gold); box-shadow: none; }
 .harbor-clue-panel p, .subject-summary, .dialogue-help { color: var(--mq-muted); }
