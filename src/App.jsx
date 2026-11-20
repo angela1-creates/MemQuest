@@ -5,6 +5,7 @@ import {
   ChartLineUp,
   Crosshair,
   HandTap,
+  House,
   MapPin,
   Medal,
   Scan,
@@ -200,6 +201,9 @@ export function App({
       beginScan();
       return;
     }
+    if (tab.id === "challenges") {
+      dispatchGlobal({ type: "SELECT_CHALLENGE", id: null });
+    }
     scanStartRef.current += 1;
     controllerRef.current?.stopExperience();
     setActiveTab(tab.id);
@@ -211,6 +215,21 @@ export function App({
     dispatchGlobal({ type: "OPEN_CONTENT", unitId: target.unitId, target });
     setActiveTab("library");
   };
+
+  const openAmericanRevolutionChallenges = () => {
+    setReturnTarget(null);
+    scanStartRef.current += 1;
+    controllerRef.current?.stopExperience();
+    dispatchGlobal({ type: "SELECT_CHALLENGE", id: null });
+    setActiveTab("challenges");
+  };
+
+  const goHome = useCallback(() => {
+    setReturnTarget(null);
+    scanStartRef.current += 1;
+    controllerRef.current?.stopExperience();
+    setActiveTab("welcome");
+  }, []);
 
   const isBusy = experience.mode === EXPERIENCE_MODES.STARTING;
   const hasError = [
@@ -262,10 +281,10 @@ export function App({
               <span className="scan-capture-label"><Scan size={17} aria-hidden="true" /> {experience.mode === "camera" ? "Live camera" : "Scan text"}</span>
             </header>
           ) : <header className="scan-app-header">
-            <div className="scan-brand">
+            <button type="button" className="scan-brand workspace-brand-home" onClick={goHome} aria-label="Return to MemQuest home">
               <span className="scan-brand-mark"><Sparkle size={22} weight="fill" /></span>
-              <strong>MemQuest</strong>
-            </div>
+              <div className="workspace-brand-copy"><strong>MemQuest</strong><small><House size={13} /> Home</small></div>
+            </button>
             <div className="scan-user">
               <span>History Explorer<small>Your personal archive</small></span>
               <span className="scan-user-icon"><User size={21} weight="duotone" /></span>
@@ -295,6 +314,8 @@ export function App({
             dispatch={dispatchLibrary}
             onUnavailable={announce}
             onProfile={() => handleTabChange({ id: "progress", label: "Progress" })}
+            onChallenges={openAmericanRevolutionChallenges}
+            onHome={goHome}
           />
           {libraryState.stage === LIBRARY_STAGES.HOME && (
             <TabNav activeTab={activeTab} onTabChange={handleTabChange} scanLayout />
@@ -302,7 +323,7 @@ export function App({
         </section>
       ) : globalIsOpen ? (
         <>
-          <GlobalWorkspace tab={activeTab} state={learningState} dispatch={dispatchGlobal} onOpenContent={openLearningContent} onChangeTab={setActiveTab} storageAvailable={storageAvailable} />
+          <GlobalWorkspace tab={activeTab} state={learningState} dispatch={dispatchGlobal} onOpenContent={openLearningContent} onChangeTab={setActiveTab} storageAvailable={storageAvailable} onHome={goHome} />
           <TabNav activeTab={activeTab} onTabChange={handleTabChange} scanLayout />
         </>
       ) : (

@@ -16,9 +16,9 @@ export const initialLibraryState = Object.freeze({
   discoveredClueIds: [],
   explainedClueIds: [],
   selectedClueId: null,
-  activeSection: "explore",
+  activeSection: "timeline",
   timelineMode: "events",
-  selectedTimelineEventId: "tea-party",
+  selectedTimelineEventId: "stamp-act",
   selectedCauseId: "punishment-unity",
   viewedTimelineEventIds: [],
   selectedPersonId: "samuel-adams",
@@ -63,7 +63,7 @@ export function restoreLibraryState(savedState) {
     viewedTimelineEventIds: validIds(savedState.viewedTimelineEventIds, TIMELINE_EVENTS),
     viewedPersonIds: validIds(savedState.viewedPersonIds, REVOLUTION_PEOPLE),
     reviewedEvidenceIds: validIds(savedState.reviewedEvidenceIds, REVOLUTION_EVIDENCE),
-    activeSection: ["explore", "timeline", "people", "evidence", "memory"].includes(savedState.activeSection) ? savedState.activeSection : "explore",
+    activeSection: ["timeline", "people", "evidence", "memory"].includes(savedState.activeSection) ? savedState.activeSection : "timeline",
     memoryCheck: {
       ...initialLibraryState.memoryCheck,
       ...savedMemory,
@@ -85,7 +85,7 @@ export function libraryReducer(state, action) {
         stage: LIBRARY_STAGES.OVERVIEW,
         selectedEraId: action.eraId,
         selectedClueId: null,
-        activeSection: "explore",
+        activeSection: "timeline",
       };
     case "ENTER_HARBOR":
       return {
@@ -95,7 +95,7 @@ export function libraryReducer(state, action) {
         selectedClueId: null,
       };
     case "EXIT_HARBOR":
-      return { ...state, stage: LIBRARY_STAGES.OVERVIEW, selectedClueId: null, activeSection: "explore" };
+      return { ...state, stage: LIBRARY_STAGES.OVERVIEW, selectedClueId: null, activeSection: "timeline" };
     case "BACK_HOME":
       return { ...state, stage: LIBRARY_STAGES.HOME, selectedClueId: null };
     case "DISCOVER_CLUE": {
@@ -121,6 +121,14 @@ export function libraryReducer(state, action) {
       if (state.selectedTimelineEventId === action.eventId && state.viewedTimelineEventIds.includes(action.eventId)) return state;
       return {
         ...state,
+        selectedTimelineEventId: action.eventId,
+        viewedTimelineEventIds: appendUnique(state.viewedTimelineEventIds, action.eventId),
+      };
+    case "OPEN_TIMELINE_EVENT":
+      if (!TIMELINE_EVENTS.some(e => e.id === action.eventId)) return state;
+      return {
+        ...state,
+        timelineMode: "events",
         selectedTimelineEventId: action.eventId,
         viewedTimelineEventIds: appendUnique(state.viewedTimelineEventIds, action.eventId),
       };

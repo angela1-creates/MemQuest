@@ -15,16 +15,20 @@ import {
 test("opens the American Revolution overview and enters the harbor", () => {
   let state = libraryReducer(initialLibraryState, { type: "OPEN_ERA", eraId: "american-revolution" });
   assert.equal(state.stage, LIBRARY_STAGES.OVERVIEW);
+  assert.equal(state.activeSection, "timeline");
+  assert.equal(state.selectedTimelineEventId, "stamp-act");
   state = libraryReducer(state, { type: "ENTER_HARBOR" });
   assert.equal(state.stage, LIBRARY_STAGES.HARBOR);
   state = libraryReducer(state, { type: "EXIT_HARBOR" });
   assert.equal(state.stage, LIBRARY_STAGES.OVERVIEW);
+  assert.equal(state.activeSection, "timeline");
 });
 
 test("keeps unreleased library eras non-interactive", () => {
-  const state = libraryReducer(initialLibraryState, { type: "OPEN_ERA", eraId: "ancient-china" });
+  const state = libraryReducer(initialLibraryState, { type: "OPEN_ERA", eraId: "silk-road" });
   assert.equal(state.stage, LIBRARY_STAGES.HOME);
   assert.equal(LIBRARY_ERAS.filter((era) => era.status === "active").length, 1);
+  assert.deepEqual(LIBRARY_ERAS.filter((era) => era.status === "preview").map((era) => era.id), ["silk-road"]);
 });
 
 test("tracks each harbor clue only once", () => {
@@ -57,6 +61,15 @@ test("opens every American Revolution learning section and tracks unique study a
   assert.equal(state.activeSection, "evidence");
   assert.ok(state.reviewedEvidenceIds.includes("tea-act"));
   assert.ok(calculateUnitProgress(state) > calculateUnitProgress(initialLibraryState));
+});
+
+test("opens an event detail when following a cause-and-effect link", () => {
+  let state = libraryReducer(initialLibraryState, { type: "SET_TIMELINE_MODE", mode: "causes" });
+  state = libraryReducer(state, { type: "OPEN_TIMELINE_EVENT", eventId: "congress" });
+
+  assert.equal(state.timelineMode, "events");
+  assert.equal(state.selectedTimelineEventId, "congress");
+  assert.ok(state.viewedTimelineEventIds.includes("congress"));
 });
 
 test("scores the Memory Check and preserves the best result across retries", () => {

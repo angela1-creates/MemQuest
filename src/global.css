@@ -37,7 +37,7 @@
 .journey-section-title > span, .journey-section-title > strong { color: #adb9cf; font-size: 12px; white-space: nowrap; }
 .journey-section-title > svg { flex: 0 0 auto; color: #dfbf62; }
 .journey-filters { display: flex; gap: 14px; margin-bottom: 20px; }
-.journey-filters label { display: grid; gap: 7px; font-size: 11px; color: #aab9cf; min-width: 0; }
+.journey-filters label { display: grid; flex: 1 1 0; gap: 7px; font-size: 11px; color: #aab9cf; min-width: 0; }
 .journey-filters select { min-height: 44px; width: 100%; background: #121f33; color: #e5eafa; border: 1px solid #a6bbdf30; border-radius: 9px; padding: 8px 30px 8px 12px; font: inherit; font-size: 12px; }
 .challenge-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 17px; }
 .challenge-card { display: flex; flex-direction: column; padding: 0; overflow: hidden; text-align: left; color: #e9edff; background: #111c2e; border: 1px solid #a9bee529; border-radius: 17px; transition: border-color .18s, transform .18s; }
@@ -48,6 +48,11 @@
 .journey-status { display: inline-flex; align-items: center; border: 1px solid #d1ddf12b; background: #111d2edb; color: #c3cddd; border-radius: 6px; padding: 5px 9px; font-size: 10px; line-height: 1.4; }
 .status-in-progress { color: #f8d771; border-color: #f8d77166; }
 .status-complete { color: #9bd5b5; border-color: #9bd5b566; }
+.status-locked { color: #a9b4c5; border-color: #a9b4c544; gap: 5px; }
+.challenge-card-image.is-stamp-act,
+.challenge-card-image.is-massacre,
+.challenge-card-image.is-tea-party,
+.challenge-card-image.is-congress { background-position: center 24%; }
 .challenge-card-copy { padding: 0 18px 18px; flex: 1; display: flex; flex-direction: column; }
 .challenge-card-copy > small { color: #c4b795; font-size: 10px; }
 .challenge-card-copy h3 { margin: 9px 0; font-family: Georgia, serif; font-size: 21px; font-weight: 500; }
@@ -78,12 +83,26 @@
 .harbor-check-grid > div > span.is-done { color: #9dd4b0; }
 .harbor-check-grid small { color: #a8b5c9; font-size: 12px; }
 .order-challenge ol { list-style: none; padding: 0; display: grid; gap: 12px; }
-.order-challenge li { display: flex; align-items: center; gap: 17px; padding: 15px; border: 1px solid #a9bee52b; background: #0b1728; border-radius: 12px; }
+.order-challenge li { display: flex; align-items: center; gap: 12px; padding: 12px 15px 12px 10px; border: 1px solid #a9bee52b; background: #0b1728; border-radius: 12px; transition: border-color 150ms ease, background 150ms ease, transform 150ms ease; }
+.order-challenge li.is-dragging { z-index: 1; border-color: #e8c775a3; background: #17263c; box-shadow: 0 10px 26px #0007; transform: scale(1.012); }
+.order-drag-handle { display: grid; width: 42px; min-height: 48px; flex: 0 0 auto; place-items: center; color: #aebbd0; border-radius: 8px; cursor: grab; touch-action: none; user-select: none; }
+.order-drag-handle:hover { color: var(--mq-gold, #e8c775); background: #e8c77512; }
+.order-challenge li.is-dragging .order-drag-handle { color: var(--mq-gold, #e8c775); cursor: grabbing; }
+.order-drag-handle.is-disabled { color: #63728a; cursor: default; }
+.order-drag-handle.is-disabled:hover { color: #63728a; background: transparent; }
 .order-index { color: var(--mq-gold, #e8c775); font: 27px Georgia, serif; width: 28px; flex-shrink: 0; text-align: center; }
+.order-event-copy { min-width: 0; flex: 1; }
 .order-challenge li strong { font-size: 15px; }
 .order-challenge li small { display: block; color: #b2c1d5; font-size: 12px; margin-top: 7px; }
 .order-controls { display: flex; gap: 5px; margin-left: auto; }
 .order-controls button { display: grid; place-items: center; min-width: 44px; min-height: 44px; border: 1px solid #a9bee52b; background: #1c2a40; color: #e9edff; border-radius: 8px; }
+.order-announcement { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+@media (hover: hover) and (pointer: fine) {
+  .order-challenge li:not(.is-locked) { cursor: grab; }
+  .order-challenge li.is-dragging { cursor: grabbing; }
+  .order-challenge li:not(.is-locked):hover { border-color: #e8c77570; }
+  .order-controls button { cursor: pointer; }
+}
 .challenge-questions { display: grid; gap: 20px; }
 .challenge-question h2 { font-size: clamp(23px, 2.5vw, 29px); margin: 12px 0 23px; max-width: 780px; }
 .challenge-options { display: grid; gap: 10px; }
@@ -96,6 +115,10 @@
 .journey-feedback p { font-size: 14px; margin: 7px 0; }
 .challenge-submit { display: flex; align-items: center; justify-content: flex-end; gap: 20px; padding: 25px 0; }
 .challenge-submit p { font-size: 13px; }
+.challenge-mode-toggle { display: flex; align-items: flex-start; gap: 12px; width: min(460px, 100%); margin: 20px auto; padding: 15px; color: #e5eafa; text-align: left; border: 1px solid #e8c7753d; background: #0b1728; border-radius: 12px; }
+.challenge-mode-toggle input { width: 18px; height: 18px; margin-top: 2px; accent-color: var(--mq-gold, #e8c775); }
+.challenge-mode-toggle span { display: grid; gap: 4px; }
+.challenge-mode-toggle small { color: #9cabc0; line-height: 1.45; }
 .journey-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); padding: 24px 0; border-top: 1px solid #a9bee527; border-bottom: 1px solid #a9bee527; gap: 22px; }
 .journey-stats > div { display: grid; gap: 8px; }
 .journey-stats strong { color: #f4d681; font: 42px Georgia, serif; }
@@ -172,7 +195,6 @@
   .journey-section-title { align-items: flex-start; }
   .journey-section-title > span { white-space: normal; text-align: right; }
   .journey-filters { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-  .journey-filters label:first-child { grid-column: 1 / -1; }
   .challenge-grid { gap: 13px; }
   .challenge-card-image { height: 128px; }
   .challenge-card-copy { padding: 0 12px 15px; }
@@ -210,4 +232,4 @@
   .progress-columns { grid-template-columns: 1fr; }
   .journey-stats { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 }
-@media (prefers-reduced-motion: reduce) { .challenge-card { transition: none; } .challenge-card:hover { transform: none; } }
+@media (prefers-reduced-motion: reduce) { .challenge-card, .order-challenge li { transition: none; } .challenge-card:hover, .order-challenge li.is-dragging { transform: none; } }

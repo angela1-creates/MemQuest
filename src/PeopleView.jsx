@@ -3,6 +3,7 @@ import { ArrowRight, ArrowsIn, ArrowsOut, Books, Check, FileText, Graph, Megapho
 import { REVOLUTION_EVIDENCE, REVOLUTION_PEOPLE } from "./revolutionData.js";
 import { TIMELINE_EVENTS } from "./scanData.js";
 import { PEOPLE_PROFILES } from "./peopleProfiles.js";
+import { UnitSectionHeader } from "./UnitSectionHeader.jsx";
 import johnHero from "./assets/archive/john-adams-people-hero.png";
 import samuelHero from "./assets/archive/samuel-adams-people-hero.png";
 import peopleTriptych from "./assets/archive/revolution-people-triptych.jpg";
@@ -82,8 +83,8 @@ export function PeopleView({ state, dispatch }) {
   const eventIds = showAllEvents ? person.eventIds : featuredIds;
 
   return <section ref={viewRef} className="unit-view people-unit-view people-dossier" aria-labelledby="unit-people-title">
+    <UnitSectionHeader section="people" trailing={<span className="unit-count-pill">{state.viewedPersonIds.length} / {REVOLUTION_PEOPLE.length} explored</span>} />
     <div className="people-dossier-inner">
-      <header className="people-archive-heading"><span><UsersThree size={18} weight="duotone" /> AMERICAN REVOLUTION / PEOPLE</span><small>{state.viewedPersonIds.length} of {REVOLUTION_PEOPLE.length} perspectives explored</small></header>
       <nav ref={switcherRef} className="people-switcher" aria-label="Historical people">
         {REVOLUTION_PEOPLE.map((entry) => <button type="button" key={entry.id} className={entry.id === person.id ? "is-active" : ""} aria-pressed={entry.id === person.id} onClick={() => selectPerson(entry.id)}><Portrait personId={entry.id} /><span>{PEOPLE_PROFILES[entry.id].shortName}</span>{state.viewedPersonIds.includes(entry.id) && <Check size={13} />}</button>)}
       </nav>
@@ -91,7 +92,7 @@ export function PeopleView({ state, dispatch }) {
       <article className={`people-hero ${["samuel-adams", "john-adams"].includes(person.id) ? "is-samuel" : ""}`}>
         <Portrait personId={person.id} className="people-hero-art" descriptive />
         <div className="people-hero-scrim" />
-        <div className="people-hero-copy"><span className="people-eyebrow">{person.side} perspective / Boston</span><h1 id="unit-people-title">{person.name}</h1><p className="people-hero-subtitle">{person.role} <span>| {person.lifespan}</span></p><p className="people-hero-introduction">{profile.introduction}</p></div>
+        <div className="people-hero-copy"><span className="people-eyebrow">{person.side} perspective / Boston</span><h2>{person.name}</h2><p className="people-hero-subtitle">{person.role} <span>| {person.lifespan}</span></p><p className="people-hero-introduction">{profile.introduction}</p></div>
         <small className="people-portrait-caption">Historical interpretation</small>
       </article>
 

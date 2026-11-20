@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
+  ArrowLeft,
   ArrowsOut,
   CaretDown,
   Clock,
@@ -1383,6 +1384,7 @@ export function HarborScene({ discoveredClueIds, selectedClueId, onDiscover, onC
   const onDiscoverRef = useRef(onDiscover);
   const [viewMode, setViewMode] = useState("loading");
   const [motionReady, setMotionReady] = useState(false);
+  const [xrSupport, setXrSupport] = useState("checking");
   const [clueAnchor, setClueAnchor] = useState(null);
   const [isWhyOpen, setIsWhyOpen] = useState(false);
   const [playingClueId, setPlayingClueId] = useState(null);
@@ -1441,6 +1443,21 @@ export function HarborScene({ discoveredClueIds, selectedClueId, onDiscover, onC
       audio.pause();
       audio.removeAttribute("src");
     }
+  }, []);
+
+  useEffect(() => {
+    let current = true;
+    const checkXrSupport = async () => {
+      try {
+        const supported = Boolean(navigator.xr?.isSessionSupported)
+          && await navigator.xr.isSessionSupported("immersive-vr");
+        if (current) setXrSupport(supported ? "supported" : "unavailable");
+      } catch {
+        if (current) setXrSupport("unavailable");
+      }
+    };
+    checkXrSupport();
+    return () => { current = false; };
   }, []);
 
   const enableMotion = () => runtimeRef.current?.enableMotion();
@@ -1504,21 +1521,15 @@ export function HarborScene({ discoveredClueIds, selectedClueId, onDiscover, onC
           <span><Compass size={22} weight="duotone" /></span>
           <div><strong>MEMQUEST VR</strong><small>Seeker 01 · Active Session</small></div>
         </div>
-        <nav aria-label="Scene navigation"><button type="button" onClick={handleExit}>Library</button><span>Timeline</span><strong>1773 World</strong></nav>
-        <div className="harbor-current"><small>Current Unit</small><strong>Boston Tea Party</strong></div>
+        <div className="harbor-current"><small>Immersive Harbor</small><strong>Boston · December 1773</strong></div>
       </header>
 
       <aside className="harbor-objective glass-surface">
         <div className="harbor-objective-kicker"><span>ACTIVE OBJECTIVE</span><Compass size={20} weight="duotone" /></div>
         <h1>Investigate the Harbor</h1>
+        <p>Explore the night of December 16, 1773. Find four clues that reveal how the protest was organized.</p>
         <div className="harbor-clue-count"><span>Clues Found</span><strong>{discoveredClueIds.length} / {HARBOR_CLUES.length}</strong></div>
         <div className="harbor-progress-track"><span style={{ width: `${progress}%` }} /></div>
-      </aside>
-
-      <aside className="harbor-environment glass-surface">
-        <div><small>Environment</small><strong>Boston Harbor, 1773</strong></div>
-        <div><small>Visibility</small><strong>Low (Fog)</strong></div>
-        <Compass size={24} weight="duotone" />
       </aside>
 
       <div className="harbor-tools" aria-label="Scene tools">
@@ -1530,13 +1541,19 @@ export function HarborScene({ discoveredClueIds, selectedClueId, onDiscover, onC
       <div className="harbor-controls">
         <button type="button" className="harbor-control" onClick={enableMotion} aria-pressed={viewMode === "motion"}>
           <ArrowsOut size={19} />
-          <span>{motionReady ? "Motion tracking active" : viewMode === "motion-denied" ? "Motion permission denied" : "Use phone motion"}</span>
+          <span className="harbor-control-copy">
+            <strong>{motionReady ? "Phone motion active" : viewMode === "motion-denied" ? "Motion unavailable" : "Look around with phone"}</strong>
+            <small>{motionReady ? "Tilt to look" : viewMode === "motion-denied" ? "Drag to look instead" : "Uses device motion"}</small>
+          </span>
         </button>
-        <button type="button" className="harbor-control is-primary" onClick={enterImmersive}>
+        <button type="button" className="harbor-control is-primary" onClick={enterImmersive} disabled={xrSupport !== "supported" && viewMode !== "immersive-vr"}>
           <Headset size={20} weight="duotone" />
-          <span>{viewMode === "immersive-vr" ? "VR active" : "Enter WebXR"}</span>
+          <span className="harbor-control-copy">
+            <strong>{viewMode === "immersive-vr" ? "Immersive VR active" : xrSupport === "checking" ? "Checking VR support" : xrSupport === "supported" ? "Enter immersive VR" : "VR unavailable"}</strong>
+            <small>{xrSupport === "supported" || viewMode === "immersive-vr" ? "Headset / WebXR" : "Use phone or drag"}</small>
+          </span>
         </button>
-        <button type="button" className="harbor-exit" onClick={handleExit}><X size={19} /> Exit scene</button>
+        <button type="button" className="harbor-exit" onClick={handleExit}><ArrowLeft size={19} /> Back to Timeline</button>
       </div>
 
       <div className="harbor-hint"><Eye size={22} weight="duotone" /><span>Tap translucent gold rings · drag elsewhere to look</span></div>

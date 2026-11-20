@@ -36,9 +36,20 @@ export function restoreLearningState(saved, legacy) {
     if (!draft || !["in-progress", "complete"].includes(draft.status)) continue;
     const answers = Object.fromEntries((c.questions ?? []).filter(q => q.options.some(o => o.id === draft.answers?.[q.id])).map(q => [q.id, draft.answers[q.id]]));
     const order = Array.isArray(draft.order) && draft.order.length === 4 && new Set(draft.order).size === 4 && draft.order.every(id => TIMELINE_EVENTS.some(e => e.id === id)) ? draft.order : c.initialOrder;
-    const expectedCount = c.kind === "order" ? 1 : (c.questions?.length ?? 0);
+    const expectedCount = c.kind === "order" ? 1 : (c.questions?.length ?? 0) + (c.causalMap ? 1 : 0);
     const lastResult = Number.isFinite(draft.lastResult?.correct) && draft.lastResult?.count === expectedCount ? { count: expectedCount, correct: Math.max(0, Math.min(expectedCount, draft.lastResult.correct)) } : null;
-    challenges[c.id] = { status: draft.status, answers, order, startedAt: safeTime(draft.startedAt), completedAt: draft.completedAt ? safeTime(draft.completedAt) : null, everCompleted: Boolean(draft.everCompleted || draft.status === "complete"), lastResult };
+    const clueIds = new Set(c.clues?.map(clue => clue.id) ?? []);
+    const visitedClueIds = [...new Set(Array.isArray(draft.visitedClueIds) ? draft.visitedClueIds.filter(id => clueIds.has(id)) : [])];
+    const collectedClueIds = [...new Set(Array.isArray(draft.collectedClueIds) ? draft.collectedClueIds.filter(id => clueIds.has(id)) : [])];
+    const hints = Object.fromEntries(Object.entries(draft.hints ?? {}).filter(([id, count]) => clueIds.has(id) && Number.isFinite(count)).map(([id, count]) => [id, Math.max(0, Math.min(c.clues.find(clue => clue.id === id).hints.length, count))]));
+    const causalStepIds = c.causalMap?.steps.map(step => step.id) ?? [];
+    const causalOrder = Array.isArray(draft.causalOrder) && draft.causalOrder.length === causalStepIds.length && new Set(draft.causalOrder).size === causalStepIds.length && draft.causalOrder.every(id => causalStepIds.includes(id)) ? draft.causalOrder : c.causalMap?.initialOrder;
+    const predictionId = c.prediction?.options.some(option => option.id === draft.predictionId) ? draft.predictionId : null;
+    const causalEvidenceId = c.causalReasoning?.evidenceOptions.some(option => option.id === draft.causalEvidenceId) ? draft.causalEvidenceId : null;
+    const causalExplanationId = c.causalReasoning?.explanationOptions.some(option => option.id === draft.causalExplanationId) ? draft.causalExplanationId : null;
+    const apPromptIds = new Set(c.apChallenge?.prompts.map(prompt => prompt.id) ?? []);
+    const apResponses = Object.fromEntries(Object.entries(draft.apResponses ?? {}).filter(([id, value]) => apPromptIds.has(id) && typeof value === "string").map(([id, value]) => [id, value.slice(0, 800)]));
+    challenges[c.id] = { status: draft.status, answers, order, causalOrder, causalChecked: Boolean(draft.causalChecked), causalEvidenceId, causalExplanationId, causalReasoningChecked: Boolean(draft.causalReasoningChecked), causalReasoningResolved: Boolean(draft.causalReasoningResolved || draft.status === "complete"), causalReasoningAttempts: Math.max(0, Math.min(100, Number(draft.causalReasoningAttempts) || 0)), causalReasoningRevisions: Math.max(0, Math.min(100, Number(draft.causalReasoningRevisions) || 0)), apResponses, apSelfChecked: Boolean(draft.apSelfChecked), predictionId, visitedClueIds, collectedClueIds, hints, challengeMode: Boolean(draft.challengeMode), startedAt: safeTime(draft.startedAt), completedAt: draft.completedAt ? safeTime(draft.completedAt) : null, everCompleted: Boolean(draft.everCompleted || draft.status === "complete"), lastResult };
   }
   const attempts = Array.isArray(saved.attempts) ? saved.attempts.filter(a => validUnit(a?.unitId) && (a.source === "memory" || getChallenge(a.source)) && Array.isArray(a.results)).slice(-100).map(a => ({ ...a, at: safeTime(a.at), results: a.results.filter(r => r && typeof r.questionId === "string" && LEARNING_SKILLS.some(s => s.id === r.skillId) && typeof r.correct === "boolean") })) : [];
   const activity = Array.isArray(saved.activity) ? saved.activity.filter(a => validUnit(a?.unitId) && typeof a.label === "string" && a.target && typeof a.target === "object").slice(0, 80).map(a => ({ ...a, at: safeTime(a.at) })) : [];
@@ -74,6 +85,7 @@ export function skillResults(state) {
 }
 
 export function challengeStatus(state, id) { return state.challenges[id]?.status ?? "not-started"; }
+export function challengeUnlocked(state, challenge) { return !challenge?.prerequisiteIds?.some(id => !state.challenges[id]?.everCompleted); }
 export function harborSteps(state) {
   const lib = unitLibrary(state);
   return getUnit(REVOLUTION_UNIT_ID).clueIds.map(id => ({ id, found: lib.discoveredClueIds.includes(id), understood: lib.explainedClueIds.includes(id) }));
@@ -95,6 +107,7 @@ function applyUnitAction(state, unitId, action, at) {
   let next = { ...state, units: { ...state.units, [unitId]: { ...state.units[unitId], startedAt: state.units[unitId]?.startedAt ?? at, library: after } } };
   const tracked = {
     SELECT_TIMELINE_EVENT: ["viewedTimelineEventIds", "eventId", "Explored an event", "timeline"],
+    OPEN_TIMELINE_EVENT: ["viewedTimelineEventIds", "eventId", "Explored an event", "timeline"],
     SELECT_PERSON: ["viewedPersonIds", "personId", "Explored a perspective", "people"],
     SELECT_EVIDENCE: ["reviewedEvidenceIds", "evidenceId", "Reviewed a source", "evidence"],
     DISCOVER_CLUE: ["discoveredClueIds", "clueId", "Discovered a harbor clue", "explore"],
@@ -105,7 +118,7 @@ function applyUnitAction(state, unitId, action, at) {
     const results = MEMORY_QUESTIONS.map(q => ({ questionId: q.id, skillId: q.id === "synthesis" ? "evidence" : q.id, correct: after.memoryCheck.answers[q.id] === q.answerId, target: { section: q.reviewSection } }));
     next = { ...next, attempts: [...next.attempts, { unitId, source: "memory", at, results }].slice(-100) };
     next.units = { ...next.units, [unitId]: { ...next.units[unitId], latestMemoryScore: after.memoryCheck.score } };
-    next = recordActivity(next, { unitId, label: `Memory Check · ${after.memoryCheck.score}%`, at, target: { section: "memory" } });
+    next = recordActivity(next, { unitId, label: `Unit Review: ${after.memoryCheck.score}%`, at, target: { section: "memory" } });
   }
   if (getUnitSummary(next, unitId).complete && !next.units[unitId].completedAt) {
     next = { ...next, units: { ...next.units, [unitId]: { ...next.units[unitId], completedAt: at } } };
@@ -135,7 +148,30 @@ export function learningReducer(state, action) {
     case "START_CHALLENGE": {
       const c = getChallenge(action.id);
       if (!c || (challengeStatus(state, c.id) === "in-progress" && !action.retry)) return state;
-      return { ...state, units: { ...state.units, [c.unitId]: state.units[c.unitId] ?? { library: initialLibraryState, startedAt: at } }, selectedChallengeId: c.id, challenges: { ...state.challenges, [c.id]: { status: "in-progress", startedAt: at, answers: {}, order: c.initialOrder, everCompleted: Boolean(state.challenges[c.id]?.everCompleted) } } };
+      return { ...state, units: { ...state.units, [c.unitId]: state.units[c.unitId] ?? { library: initialLibraryState, startedAt: at } }, selectedChallengeId: c.id, challenges: { ...state.challenges, [c.id]: { status: "in-progress", startedAt: at, answers: {}, order: c.initialOrder, causalOrder: c.causalMap?.initialOrder, causalChecked: false, causalEvidenceId: null, causalExplanationId: null, causalReasoningChecked: false, causalReasoningResolved: false, causalReasoningAttempts: 0, causalReasoningRevisions: 0, apResponses: {}, apSelfChecked: false, predictionId: null, visitedClueIds: [], collectedClueIds: [], hints: {}, challengeMode: Boolean(action.challengeMode), everCompleted: Boolean(state.challenges[c.id]?.everCompleted) } } };
+    }
+    case "ANSWER_MISSION_PREDICTION": {
+      const c = getChallenge(action.id), draft = state.challenges[action.id];
+      if (c?.kind !== "mission" || draft?.status !== "in-progress" || draft.predictionId || !c.prediction?.options.some(option => option.id === action.predictionId)) return state;
+      return { ...state, challenges: { ...state.challenges, [c.id]: { ...draft, predictionId: action.predictionId } } };
+    }
+    case "VISIT_MISSION_CLUE": {
+      const c = getChallenge(action.id), draft = state.challenges[action.id];
+      if (c?.kind !== "mission" || draft?.status !== "in-progress" || (c.prediction && !draft.predictionId) || !c.clues.some(clue => clue.id === action.clueId)) return state;
+      return { ...state, challenges: { ...state.challenges, [c.id]: { ...draft, visitedClueIds: [...new Set([...(draft.visitedClueIds ?? []), action.clueId])] } } };
+    }
+    case "COLLECT_MISSION_CLUE": {
+      const c = getChallenge(action.id), draft = state.challenges[action.id];
+      if (c?.kind !== "mission" || draft?.status !== "in-progress" || !draft.visitedClueIds?.includes(action.clueId) || !c.clues.some(clue => clue.id === action.clueId)) return state;
+      return { ...state, challenges: { ...state.challenges, [c.id]: { ...draft, collectedClueIds: [...new Set([...(draft.collectedClueIds ?? []), action.clueId])] } } };
+    }
+    case "REQUEST_MISSION_HINT": {
+      const c = getChallenge(action.id), draft = state.challenges[action.id];
+      const clue = c?.clues?.find(clue => clue.id === action.clueId);
+      if (c?.kind !== "mission" || draft?.status !== "in-progress" || draft.challengeMode || !clue) return state;
+      const count = draft.hints?.[clue.id] ?? 0;
+      if (count >= clue.hints.length) return state;
+      return { ...state, challenges: { ...state.challenges, [c.id]: { ...draft, hints: { ...draft.hints, [clue.id]: count + 1 } } } };
     }
     case "ANSWER_CHALLENGE": {
       const c = getChallenge(action.id), draft = state.challenges[action.id];
@@ -152,13 +188,78 @@ export function learningReducer(state, action) {
       [order[index], order[target]] = [order[target], order[index]];
       return { ...state, challenges: { ...state.challenges, [action.id]: { ...draft, order } } };
     }
+    case "MOVE_EVENT_TO_INDEX": {
+      const draft = state.challenges[action.id];
+      if (draft?.status !== "in-progress" || !draft.order || !Number.isInteger(action.targetIndex) || action.targetIndex < 0 || action.targetIndex >= draft.order.length) return state;
+      const index = draft.order.indexOf(action.eventId);
+      if (index < 0 || index === action.targetIndex) return state;
+      const order = [...draft.order];
+      order.splice(action.targetIndex, 0, order.splice(index, 1)[0]);
+      return { ...state, challenges: { ...state.challenges, [action.id]: { ...draft, order } } };
+    }
+    case "MOVE_CAUSAL_STEP": {
+      const c = getChallenge(action.id), draft = state.challenges[action.id];
+      if (!c?.causalMap || draft?.status !== "in-progress" || draft.causalChecked || ![-1, 1].includes(action.direction)) return state;
+      const index = draft.causalOrder?.indexOf(action.stepId) ?? -1, target = index + action.direction;
+      if (index < 0 || target < 0 || target >= draft.causalOrder.length) return state;
+      const causalOrder = [...draft.causalOrder];
+      [causalOrder[index], causalOrder[target]] = [causalOrder[target], causalOrder[index]];
+      return { ...state, challenges: { ...state.challenges, [c.id]: { ...draft, causalOrder } } };
+    }
+    case "MOVE_CAUSAL_STEP_TO_INDEX": {
+      const c = getChallenge(action.id), draft = state.challenges[action.id];
+      if (!c?.causalMap || draft?.status !== "in-progress" || draft.causalChecked || !Number.isInteger(action.targetIndex) || action.targetIndex < 0 || action.targetIndex >= draft.causalOrder.length) return state;
+      const index = draft.causalOrder.indexOf(action.stepId);
+      if (index < 0 || index === action.targetIndex) return state;
+      const causalOrder = [...draft.causalOrder];
+      causalOrder.splice(action.targetIndex, 0, causalOrder.splice(index, 1)[0]);
+      return { ...state, challenges: { ...state.challenges, [c.id]: { ...draft, causalOrder } } };
+    }
+    case "CHECK_CAUSAL_MAP": {
+      const c = getChallenge(action.id), draft = state.challenges[action.id];
+      if (!c?.causalMap || draft?.status !== "in-progress" || !draft.predictionId || c.clues.some(clue => !draft.collectedClueIds?.includes(clue.id))) return state;
+      return { ...state, challenges: { ...state.challenges, [c.id]: { ...draft, causalChecked: true } } };
+    }
+    case "SELECT_CAUSAL_EVIDENCE": {
+      const c = getChallenge(action.id), draft = state.challenges[action.id];
+      if (!c?.causalReasoning || draft?.status !== "in-progress" || !draft.causalChecked || draft.causalReasoningResolved || !c.causalReasoning.evidenceOptions.some(option => option.id === action.optionId)) return state;
+      const revised = Boolean(draft.causalEvidenceId && draft.causalEvidenceId !== action.optionId);
+      return { ...state, challenges: { ...state.challenges, [c.id]: { ...draft, causalEvidenceId: action.optionId, causalReasoningChecked: false, causalReasoningRevisions: (draft.causalReasoningRevisions ?? 0) + (revised ? 1 : 0) } } };
+    }
+    case "SELECT_CAUSAL_EXPLANATION": {
+      const c = getChallenge(action.id), draft = state.challenges[action.id];
+      if (!c?.causalReasoning || draft?.status !== "in-progress" || !draft.causalChecked || draft.causalReasoningResolved || !c.causalReasoning.explanationOptions.some(option => option.id === action.optionId)) return state;
+      const revised = Boolean(draft.causalExplanationId && draft.causalExplanationId !== action.optionId);
+      return { ...state, challenges: { ...state.challenges, [c.id]: { ...draft, causalExplanationId: action.optionId, causalReasoningChecked: false, causalReasoningRevisions: (draft.causalReasoningRevisions ?? 0) + (revised ? 1 : 0) } } };
+    }
+    case "CHECK_CAUSAL_REASONING": {
+      const c = getChallenge(action.id), draft = state.challenges[action.id];
+      if (!c?.causalReasoning || draft?.status !== "in-progress" || !draft.causalChecked || !draft.causalEvidenceId || !draft.causalExplanationId || draft.causalReasoningResolved) return state;
+      const resolved = draft.causalEvidenceId === c.causalReasoning.evidenceAnswerId && draft.causalExplanationId === c.causalReasoning.explanationAnswerId;
+      return { ...state, challenges: { ...state.challenges, [c.id]: { ...draft, causalReasoningChecked: true, causalReasoningResolved: resolved, causalReasoningAttempts: (draft.causalReasoningAttempts ?? 0) + 1 } } };
+    }
+    case "UPDATE_AP_RESPONSE": {
+      const c = getChallenge(action.id), draft = state.challenges[action.id];
+      if (!c?.apChallenge || draft?.status !== "complete" || !c.apChallenge.prompts.some(prompt => prompt.id === action.promptId) || typeof action.value !== "string") return state;
+      return { ...state, challenges: { ...state.challenges, [c.id]: { ...draft, apResponses: { ...(draft.apResponses ?? {}), [action.promptId]: action.value.slice(0, 800) }, apSelfChecked: false } } };
+    }
+    case "CHECK_AP_RESPONSE": {
+      const c = getChallenge(action.id), draft = state.challenges[action.id];
+      if (!c?.apChallenge || draft?.status !== "complete" || !c.apChallenge.prompts.every(prompt => draft.apResponses?.[prompt.id]?.trim())) return state;
+      return { ...state, challenges: { ...state.challenges, [c.id]: { ...draft, apSelfChecked: true } } };
+    }
     case "SUBMIT_CHALLENGE": {
       const c = getChallenge(action.id), draft = state.challenges[action.id];
       if (!c || draft?.status !== "in-progress") return state;
       if (c.kind === "exploration" && !harborSteps(state).every(s => s.found && s.understood)) return state;
+      if (c.kind === "mission" && c.clues.some(clue => !draft.collectedClueIds?.includes(clue.id))) return state;
+      if (c.prediction && !draft.predictionId) return state;
+      if (c.causalMap && !draft.causalChecked) return state;
+      if (c.causalReasoning && !draft.causalReasoningResolved) return state;
       if (c.questions?.some(q => !draft.answers[q.id])) return state;
-      const results = c.kind === "order" ? [{ questionId: "event-sequence", skillId: "chronology", correct: TIMELINE_EVENTS.every((e, i) => draft.order[i] === e.id), target: { section: "timeline" } }] : (c.questions ?? []).map(q => ({ questionId: q.id, skillId: q.skillId, correct: draft.answers[q.id] === q.answerId, target: q.target }));
-      let next = { ...state, challenges: { ...state.challenges, [c.id]: { ...draft, status: "complete", completedAt: at, everCompleted: true, lastResult: { count: results.length, correct: results.filter(r => r.correct).length } } }, attempts: [...state.attempts, { unitId: c.unitId, source: c.id, at, results }].slice(-100) };
+      const results = c.kind === "order" ? [{ questionId: "event-sequence", skillId: "chronology", correct: TIMELINE_EVENTS.every((e, i) => draft.order[i] === e.id), target: { section: "timeline" } }] : [...(c.questions ?? []).map(q => ({ questionId: q.id, skillId: q.skillId, correct: draft.answers[q.id] === q.answerId, target: q.target })), ...(c.causalMap ? [{ questionId: "causal-map", skillId: "causality", correct: c.causalMap.steps.every((step, index) => draft.causalOrder[index] === step.id), target: { section: "timeline" } }] : [])];
+      const process = c.kind === "mission" ? { hintsUsed: Object.values(draft.hints ?? {}).reduce((sum, count) => sum + count, 0), causalReasoningAttempts: draft.causalReasoningAttempts ?? 0, causalReasoningRevisions: draft.causalReasoningRevisions ?? 0 } : undefined;
+      let next = { ...state, challenges: { ...state.challenges, [c.id]: { ...draft, status: "complete", completedAt: at, everCompleted: true, lastResult: { count: results.length, correct: results.filter(r => r.correct).length } } }, attempts: [...state.attempts, { unitId: c.unitId, source: c.id, at, results, ...(process ? { process } : {}) }].slice(-100) };
       return recordActivity(next, { unitId: c.unitId, label: `Completed: ${c.title}`, at, target: { challengeId: c.id } });
     }
     case "IMPORT_LEGACY": {

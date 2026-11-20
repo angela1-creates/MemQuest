@@ -4,6 +4,8 @@ import { App } from "./App.jsx";
 import "./styles.css";
 import "./archive-refresh.css";
 import "./interface-theme.css";
+import "./library-home-polish.css";
+import "./workspace-navigation.css";
 
 createRoot(document.getElementById("root")).render(
   <React.StrictMode>

@@ -7,22 +7,12 @@ export const LIBRARY_ERAS = Object.freeze([
     description: "Trace the protests, people, and evidence that transformed thirteen colonies into a new nation.",
   },
   {
-    id: "ancient-china",
-    title: "Ancient China",
-    dates: "2070 BC - 220 AD",
-    status: "preview",
-  },
-  {
     id: "silk-road",
-    title: "Silk Road Civilizations",
-    dates: "130 BC - 1453 AD",
+    title: "Silk Roads: Networks of Exchange",
+    previewLabel: "Up next",
+    dates: "c. 1200-1450 CE",
     status: "preview",
-  },
-  {
-    id: "world-war-ii",
-    title: "World War II",
-    dates: "1939 - 1945",
-    status: "preview",
+    description: "Explore how trade, ideas, and technologies connected civilizations across Eurasia.",
   },
 ]);
 
@@ -78,9 +68,9 @@ export const HARBOR_CLUES = Object.freeze([
 ]);
 
 export const REVOLUTION_SECTIONS = Object.freeze([
-  { id: "explore", label: "Explore" },
   { id: "timeline", label: "Timeline" },
+  { id: "explore", label: "Immersive Harbor" },
   { id: "people", label: "People" },
   { id: "evidence", label: "Evidence" },
-  { id: "memory", label: "Memory Check" },
+  { id: "memory", label: "Unit Review" },
 ]);

@@ -61,7 +61,7 @@
 
 MemQuest 是一个可以在手机浏览器打开的历史学习交互原型。用户既能通过相机读到印刷英文中的历史线索，也能进入数字历史档案和 3D 港口场景，再通过挑战和反馈继续学习。
 
-当前完整样例是 **The American Revolution**。其他时代卡片只是 Coming soon，不是已经开发好的内容。
+当前完整样例是 **The American Revolution**。Library 只展示一个非功能性的未来方向 **Up Next: Silk Roads: Networks of Exchange (c. 1200-1450 CE)**；它不是已经开发好的单元，也不进入学习统计。
 
 ### 2.1 最少需要认识的词
 
@@ -412,11 +412,11 @@ MemQuest
 ├─ Scan：相机文字 → 事件结果 → 人物 / 时间线
 ├─ Library：时代首页
 │  └─ American Revolution：当前完整单元
-│     ├─ Explore：概览 → Boston Harbor 1773
-│     ├─ Timeline：事件和因果联系
+│     ├─ Timeline：默认入口，从 Stamp Act 开始建立事件和因果联系
+│     ├─ Immersive Harbor：显式进入 Boston Harbor 1773 的 WebXR / 3D 体验
 │     ├─ People：人物立场与关系
 │     ├─ Evidence：线索与证据限制
-│     └─ Memory Check：单元练习
+│     └─ Unit Review：五题单元评估
 ├─ Challenges：跨时代的全局任务目录
 └─ Progress：跨时代的全局学习记录
 ```
@@ -425,7 +425,7 @@ Challenges / Progress 的结构面向所有历史时代；目前只有美国革�
 
 ![Library 首页；只有美国革命可进入](./images/library.jpg)
 
-图 1：本地真实应用截图，初始探索为 0%。其他时代明确标记 Coming soon。
+图 1：较早版本的本地真实应用截图，初始探索为 0%。当前界面已经把多个 Coming soon 卡片收敛为一个较低层级的 Silk Roads “Up Next”预览；本图不能作为当前卡片数量的验证截图。
 
 ### 7.2 Scan：对文字进行事件匹配
 
@@ -478,11 +478,13 @@ Challenges / Progress 的结构面向所有历史时代；目前只有美国革�
 
 修改声音要同时检查：英文脚本、史实、发音、声线、文件大小、组件中的资源引用。只改屏幕文字不会自动修改音频里的内容。
 
-### 7.4 Library → Explore
+### 7.4 Library → Timeline / Immersive Harbor
 
-单元概览介绍时代范围，引导进入港口，并能转到 Timeline、People、Evidence、Memory Check。这里是“进入学习单元”的页面，不是全局首页。
+单元不再使用独立概览卡。进入后默认打开 Timeline，先从 Stamp Act 建立时间与因果定位；点击第二个 Immersive Harbor 标签会直接进入 3D 港口，但不会自动请求 WebXR 或设备方向权限，这些模式仍由场景内的独立控件解释和请求。
 
-![美国革命单元 Explore](./images/explore.jpg)
+各单元页面以较轻的 `American Revolution · The Road to Independence` 上下文行保留单元身份，不恢复会遮挡内容的大型概览卡。Timeline 标题固定为一行、采用较小的编辑式衬线层级，并与事件卡保留清楚留白。港口顶栏不并列显示层级不同的 Library / Timeline 伪面包屑；右侧只以安静的 `Immersive Harbor / Boston · December 1773` 标记当前位置，也不再使用 `1773 World` 或重复的 Environment / Visibility 浮层。目标标题下只有一行场景说明，右下角 Back to Timeline 是返回父级的唯一退出动作。
+
+![较早版本的美国革命单元 Explore](./images/explore.jpg)
 
 图 3：左侧是单元内导航；All eras 返回上一级。布局在手机上会重排，不必照搬桌面侧栏。
 
@@ -505,7 +507,7 @@ Challenges / Progress 的结构面向所有历史时代；目前只有美国革�
 - Listen to the story 播放该物件的故事。
 - Why it matters 在原位置展开更深的解释和相关历史。
 - 切换、关闭卡片或退出场景会停音频；不要让不同故事重叠。
-- 支持设备可尝试 Enter WebXR；普通手机可启用 Use phone motion；不支持时仍可拖动查看。
+- 支持设备显示 Enter immersive VR（Headset / WebXR）；普通手机可选择 Look around with phone（设备方向）；不支持时明确提示使用拖动查看。Immersive Harbor 标签本身就是场景入口，不再保留额外启动页或重复的 Timeline / Evidence 按钮。
 
 ![Boston Harbor 程序化 3D 场景](./images/harbor.jpg)
 
@@ -521,14 +523,14 @@ Challenges / Progress 的结构面向所有历史时代；目前只有美国革�
 
 手机能随着转动改变视角，不自动说明已经进入 WebXR；它也可能是设备方向传感器模式。Scan 成功本身不说明实现了空间定位；只有用户主动打开 Stamp Act 或 Boston Tea Party 的 `Page anchor` 才运行预设图片追踪（自动选图，一次一张），而且仍不等于平面检测、持久空间锚点或任意物体追踪。
 
-### 7.7 Timeline、People、Evidence、Memory Check
+### 7.7 Timeline、Immersive Harbor、People、Evidence、Unit Review
 
 | 页面 | 核心操作 | 继续开发时的重点 |
 | --- | --- | --- |
 | Timeline | 四张带图事件卡；手机水平滑动；选中事件后看细节和因果 | 图片、日期、叙事与选中状态同步，保留跨链接上下文 |
 | People | 四个人物视角切换，人物简介、角色、事件、关系图 | 区分盟友、对手、情境联系；不能把“共同背景”写成“确实认识” |
 | Evidence | 查看物件、报道、法律和记录；看支持什么与不能证明什么 | 有些场景证据需要先发现；锁定时不能计为已学习 |
-| Memory Check | 五道单元练习题、提交、反馈、关联复习、重试 | 不完整不能随意计分，重试不制造重复成就 |
+| Unit Review | 五道单元评估题、提交、反馈、关联复习、重试 | 与全局 Challenges 区分；不完整不能随意计分，重试不制造重复成就 |
 
 People 的当前人物是 Samuel Adams、Thomas Hutchinson、George Hewes、John Hancock。人物数据与 Scan 中以 Samuel Adams 为主的预设问答不是同一个功能范围。
 
@@ -538,7 +540,15 @@ People 的当前人物是 Samuel Adams、Thomas Hutchinson、George Hewes、John
 
 ### 7.8 全局 Challenges 和 Progress
 
-Challenges 当前有四类任务：港口调查、事件排序、人物视角、证据推理。可以按时代、技能和完成状态筛选；跳到资料页再返回时，应保留挑战进度、答案和排序。
+Challenges 保留港口调查、事件排序、人物视角和证据推理，并加入 History Time Travelers。可以按时代、技能和完成状态筛选；跳到资料页再返回时，应保留挑战进度、线索、提示、预测、答案和排序。
+
+**History Time Travelers 采用两层结构。** Featured Investigation 是约 10–12 分钟的重点任务 **Why Did Colonial Cooperation Intensify in 1774?**。它先说明殖民地合作并非由 Tea Party 从零创造：1772 年 Committees of Correspondence 已经推动信息与行动网络。学习者再调查 Boston Tea Party、英国政府的 Coercive Acts，以及各殖民地回应；先排列直接因果链，再选择相关证据并解释为何惩罚 Massachusetts 会促使其他殖民地加强合作。错误组合可以根据反馈修改。任务不能暗示十三个殖民地一致行动，也不能暗示 First Continental Congress 已把独立作为既定目标；Congress 有十二个殖民地参加，Georgia 没有派代表。
+
+提示次数、因果解释检查次数和修改次数作为**学习过程信号**单独保存，不扣减成就或题目分数。完成主任务后可选择 AP-style evidence response：阅读 Library of Congress 收藏的 1774 年 New York Committee of Correspondence 节选，回答 British action、intercolonial cooperation 和 source perspective 三个问题，再用自检表回看。它明确标注为非 College Board 官方题目，不自动评分、不影响任务完成，书面内容只保存在本机。
+
+原有四项事件任务保留为可选的 **Quick Event Files**。Stamp Act、Boston Massacre、Boston Tea Party 和 First Continental Congress 各有一项可续做的短任务：进入真实 Timeline / People / Evidence 资料，记录两条隐藏线索，完成两道知识题并获得一张档案收藏物。普通模式可逐级打开提示，Challenge mode 会隐藏提示。四事件排序题保留在 **Practice Lab**，作为可独立完成的总结练习，不再要求先收集四件收藏物。提示不自动算发现、不扣分；重试不重复增加完成数，题目表现继续使用“最近 100 次练习中每道不同题目的最新答案”规则。
+
+四张高清扫描海报位于 `src/assets/scan-posters/`。海报上方保留大号英文事件名与年份，供 OCR 使用；下方事件画面为生成式历史诠释，也为未来重新编译图片目标提供更明显的视觉特征。它们目前是本地候选素材，不等于已经通过真实手机的 OCR、三次连续图片识别或 Page anchor 验证；作品集与研究记录必须明确区分“已生成素材”和“已实机验证目标”。
 
 Progress 把**看过什么**与**答得怎样**分开：
 
@@ -546,7 +556,7 @@ Progress 把**看过什么**与**答得怎样**分开：
 - 学习反馈有时间顺序、因果、人物视角、证据推理四类。
 - 最近 100 次练习中，每道不同题目使用最新答案；四个事件的排序整体是一道题。
 - 至少三道不同题目的结果，才显示该能力的正确率；不足时明确提示。
-- 美国革命目前有 18 条内容记录；完成全部探索且 Memory Check 至少 80% 才获得单元完成标记。
+- 美国革命目前有 18 条内容记录；完成全部探索且 Unit Review 至少 80% 才获得单元完成标记。
 - 已获得完成标记不会因后续较低分被撤销；重试同一挑战不重复计数。
 - 尚未上线的时代不进入统计总数。
 - 不把浏览量写成知识掌握率，不显示“学会全部历史的百分比”。
@@ -685,11 +695,11 @@ Scan 测试页的 QA 操作：
 | 1254×960 桌面/平板 | 大屏层级合理，不仅是手机界面的放大 |
 | Scan | 同意/拒绝授权、匹配/不匹配、重试、退出 |
 | 相机暂停 | 切到其他应用再回来，允许用户恢复，不偷偷持续拍摄 |
-| Library | Home → Explore → 场景 → 返回 |
+| Library | Home → Timeline → Immersive Harbor → 场景 → 返回 |
 | 场景 | 点物件有效；拖动不误触；展开/关闭；音频不重叠 |
 | Timeline / People | 选中内容与跳转目标一致 |
 | Evidence | 锁定状态与发现条件合理 |
-| Memory Check | 未完成不可提交；反馈和重试正确 |
+| Unit Review | 未完成不可提交；反馈和重试正确 |
 | Challenges | 从任务去资料再回来，草稿不丢 |
 | Progress | 初始不预填；重复查看不重复加分 |
 | 声音 | 手机真实点击后可播放；切换/退出能停 |
@@ -867,9 +877,11 @@ Vercel 支持与 Git 仓库关联后，在 push / 合并到生产分支时自动
 | 在港口找到茶箱并解释它为何重要 | 是否区分拖动与点击，是否找到展开说明 |
 | 比较两个人物的不同立场 | 是否把“立场”理解成简单的好人 / 坏人标签 |
 | 使用一份证据回答问题 | 是否看到来源和证据能证明什么 / 不能证明什么 |
+| 完成 History Time Travelers 主任务 | 是否能在不被指导的情况下完成；用时；第一个困惑点；能否用证据解释 Coercive Acts 与 First Continental Congress 的关系 |
+| 完成可选 AP-style response | 是否能识别 British action、解释殖民地合作，并使用来源视角；自检表哪里有帮助或造成困惑 |
 | 完成挑战后查看 Progress | 是否区分探索记录与题目表现 |
 
-小样本结果适合发现问题，不足以证明普遍学习效果。没有对照条件和合适测量，不要给出“显著提升”的结论。保留失败记录通常比只展示满分更能体现设计判断。
+第一次可用性试点建议 5–8 名学生，以观察为主而不是边做边教。分别记录：是否能独立完成和用时；能否用相关证据解释 Coercive Acts 与 First Continental Congress 的关系；哪条线索或反馈最有帮助、哪里最困惑。小样本结果适合发现问题，不足以证明普遍学习效果。游戏自己的完成分数不能当作学习证明；若要声称历史理解提升，需要独立于游戏的前后测或迁移题，并尽可能设置合理的比较学习活动。保留失败记录通常比只展示满分更能体现设计判断。
 
 ### 11.6 素材与历史内容的责任
 
