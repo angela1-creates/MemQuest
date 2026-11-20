@@ -3,6 +3,8 @@ import {
   ArrowLeft,
   ArrowsOut,
   CaretDown,
+  CaretLeft,
+  CaretRight,
   Clock,
   Compass,
   Eye,
@@ -18,6 +20,7 @@ import {
 import * as THREE from "three";
 import { createHarborWater, harborRenderBudget } from "./harborWater.js";
 import { createMasonryTexture, createWaterNormalTexture, detailWarehouse, detailShip, dressWaterfront, batchStaticHarbor } from "./harborVisuals.js";
+import { HARBOR_VIEWPOINTS } from "./harborViewpoints.js";
 import dartmouthStory from "./assets/voice/clue-dartmouth.wav";
 import hatchetStory from "./assets/voice/clue-hatchet.wav";
 import lanternStory from "./assets/voice/clue-lantern.wav";
@@ -1116,6 +1119,7 @@ function createScene({ mount, onSelect, onModeChange, onMotionReady }) {
   let currentScreenOrientation = 0;
   let xrSession = null;
   let discoveredIds = new Set();
+  let cameraTransition = null;
 
   const raycastAt = (clientX, clientY) => {
     const rect = renderer.domElement.getBoundingClientRect();
@@ -1214,6 +1218,14 @@ function createScene({ mount, onSelect, onModeChange, onMotionReady }) {
     currentScreenOrientation = ((screen.orientation?.angle ?? window.orientation ?? 0) * DEG_TO_RAD);
   };
 
+  const disableMotion = () => {
+    usingMotion = false;
+    currentOrientation = null;
+    window.removeEventListener("deviceorientation", onDeviceOrientation, true);
+    screen.orientation?.removeEventListener?.("change", onScreenOrientation);
+    window.removeEventListener("orientationchange", onScreenOrientation);
+  };
+
   const enableMotion = async () => {
     try {
       if (typeof DeviceOrientationEvent === "undefined") {
@@ -1238,6 +1250,37 @@ function createScene({ mount, onSelect, onModeChange, onMotionReady }) {
       onModeChange("motion-denied");
       return false;
     }
+  };
+
+  const goToViewpoint = (id) => {
+    const viewpoint = HARBOR_VIEWPOINTS.find((item) => item.id === id);
+    if (!viewpoint || renderer.xr.isPresenting) return false;
+    disableMotion();
+    const endPosition = new THREE.Vector3(...viewpoint.position);
+    const target = new THREE.Vector3(...viewpoint.target);
+    const guideCamera = camera.clone();
+    guideCamera.position.copy(endPosition);
+    guideCamera.lookAt(target);
+    const endQuaternion = guideCamera.quaternion.clone();
+    if (reducedMotion.matches) {
+      camera.position.copy(endPosition);
+      camera.quaternion.copy(endQuaternion);
+      const finalRotation = new THREE.Euler().setFromQuaternion(endQuaternion, "YXZ");
+      pitch = finalRotation.x;
+      yaw = finalRotation.y;
+      cameraTransition = null;
+    } else {
+      cameraTransition = {
+        startedAt: performance.now(),
+        duration: 850,
+        startPosition: camera.position.clone(),
+        endPosition,
+        startQuaternion: camera.quaternion.clone(),
+        endQuaternion,
+      };
+    }
+    onModeChange("drag");
+    return true;
   };
 
   const startXR = async () => {
@@ -1300,7 +1343,19 @@ function createScene({ mount, onSelect, onModeChange, onMotionReady }) {
     timer.update(timestamp);
     const time = reducedMotion.matches ? 0 : timer.getElapsed();
     if (!renderer.xr.isPresenting) {
-      if (usingMotion && currentOrientation) {
+      if (cameraTransition) {
+        const elapsed = performance.now() - cameraTransition.startedAt;
+        const rawProgress = Math.min(1, elapsed / cameraTransition.duration);
+        const easedProgress = 1 - ((1 - rawProgress) ** 3);
+        camera.position.lerpVectors(cameraTransition.startPosition, cameraTransition.endPosition, easedProgress);
+        camera.quaternion.slerpQuaternions(cameraTransition.startQuaternion, cameraTransition.endQuaternion, easedProgress);
+        if (rawProgress === 1) {
+          const finalRotation = new THREE.Euler().setFromQuaternion(cameraTransition.endQuaternion, "YXZ");
+          pitch = finalRotation.x;
+          yaw = finalRotation.y;
+          cameraTransition = null;
+        }
+      } else if (usingMotion && currentOrientation) {
         motionEuler.set(currentOrientation.beta, currentOrientation.alpha, -currentOrientation.gamma, "YXZ");
         camera.quaternion.setFromEuler(motionEuler);
         camera.quaternion.multiply(q1);
@@ -1346,6 +1401,8 @@ function createScene({ mount, onSelect, onModeChange, onMotionReady }) {
   return {
     startXR,
     enableMotion,
+    goToViewpoint,
+    getClueAnchor: getScreenAnchor,
     setDiscovered(ids) {
       discoveredIds = new Set(ids);
     },
@@ -1385,6 +1442,7 @@ export function HarborScene({ discoveredClueIds, selectedClueId, onDiscover, onC
   const [viewMode, setViewMode] = useState("loading");
   const [motionReady, setMotionReady] = useState(false);
   const [xrSupport, setXrSupport] = useState("checking");
+  const [viewpointIndex, setViewpointIndex] = useState(0);
   const [clueAnchor, setClueAnchor] = useState(null);
   const [isWhyOpen, setIsWhyOpen] = useState(false);
   const [playingClueId, setPlayingClueId] = useState(null);
@@ -1474,6 +1532,26 @@ export function HarborScene({ discoveredClueIds, selectedClueId, onDiscover, onC
     audioRef.current = null;
     setPlayingClueId(null);
   };
+  const travelToViewpoint = (nextIndex) => {
+    const boundedIndex = Math.min(Math.max(nextIndex, 0), HARBOR_VIEWPOINTS.length - 1);
+    if (boundedIndex === viewpointIndex) return;
+    stopClueAudio();
+    onCloseClue();
+    setClueAnchor(null);
+    setIsWhyOpen(false);
+    setMotionReady(false);
+    setViewpointIndex(boundedIndex);
+    runtimeRef.current?.goToViewpoint(HARBOR_VIEWPOINTS[boundedIndex].id);
+  };
+  const inspectViewpointClue = () => {
+    const clueId = HARBOR_VIEWPOINTS[viewpointIndex].clueId;
+    if (!clueId) {
+      travelToViewpoint(1);
+      return;
+    }
+    setClueAnchor(runtimeRef.current?.getClueAnchor(clueId) ?? null);
+    onDiscover(clueId);
+  };
   const playClueStory = async () => {
     if (!selectedClue) return;
     const currentAudio = audioRef.current;
@@ -1539,13 +1617,10 @@ export function HarborScene({ discoveredClueIds, selectedClueId, onDiscover, onC
       </div>
 
       <div className="harbor-controls">
-        <button type="button" className="harbor-control" onClick={enableMotion} aria-pressed={viewMode === "motion"}>
+        <div className="harbor-capability-note" role="note">
           <ArrowsOut size={19} />
-          <span className="harbor-control-copy">
-            <strong>{motionReady ? "Device motion active" : viewMode === "motion-denied" ? "Motion unavailable" : "Move device to look around"}</strong>
-            <small>{motionReady ? "Tilt to look" : viewMode === "motion-denied" ? "Drag to look instead" : "Uses device motion"}</small>
-          </span>
-        </button>
+          <span className="harbor-control-copy"><strong>Drag to look around</strong><small>Swipe or use mouse</small></span>
+        </div>
         {xrSupport === "supported" || viewMode === "immersive-vr" ? (
           <button type="button" className="harbor-control is-primary" onClick={enterImmersive}>
             <Headset size={20} weight="duotone" />
@@ -1565,6 +1640,13 @@ export function HarborScene({ discoveredClueIds, selectedClueId, onDiscover, onC
         )}
         <button type="button" className="harbor-exit" onClick={handleExit}><ArrowLeft size={19} /> Back to Timeline</button>
       </div>
+
+      <nav className="harbor-viewpoint-tour" aria-label="Guided Harbor viewpoints">
+        <button type="button" onClick={() => travelToViewpoint(viewpointIndex - 1)} disabled={viewpointIndex === 0} aria-label="Previous Harbor viewpoint"><CaretLeft size={18} weight="bold" /></button>
+        <div><small>GUIDED VIEWPOINT {viewpointIndex + 1} / {HARBOR_VIEWPOINTS.length}</small><strong>{HARBOR_VIEWPOINTS[viewpointIndex].label}</strong></div>
+        <button type="button" className="harbor-viewpoint-inspect" onClick={inspectViewpointClue} aria-label={HARBOR_VIEWPOINTS[viewpointIndex].clueId ? `Inspect ${HARBOR_VIEWPOINTS[viewpointIndex].label}` : "Begin the guided Harbor tour"}>{HARBOR_VIEWPOINTS[viewpointIndex].clueId ? "Inspect clue" : "Begin tour"}</button>
+        <button type="button" onClick={() => travelToViewpoint(viewpointIndex + 1)} disabled={viewpointIndex === HARBOR_VIEWPOINTS.length - 1} aria-label="Next Harbor viewpoint"><CaretRight size={18} weight="bold" /></button>
+      </nav>
 
       <div className="harbor-hint"><Eye size={22} weight="duotone" /><span>Tap translucent gold rings · drag elsewhere to look</span></div>
 
