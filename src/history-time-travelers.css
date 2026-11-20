@@ -84,18 +84,24 @@ html, body { overflow-x: clip; }
 .mission-brief h2 { margin: var(--htt-space-1) 0 var(--htt-space-2); }
 .mission-brief p { font-size: 13px; }
 .mission-brief > strong { color: var(--htt-gold); font: 30px var(--htt-font-editorial); white-space: nowrap; }
-.mission-phase-rail { display: grid; grid-template-columns: minmax(180px, .8fr) minmax(0, 2.2fr); align-items: center; gap: var(--htt-space-5); margin-bottom: var(--htt-space-5); padding: var(--htt-space-4) var(--htt-space-5); border: 1px solid var(--htt-border); border-radius: 16px; background: var(--htt-surface); }
-.mission-phase-rail > div { display: grid; gap: 3px; }
-.mission-phase-rail > div small { color: var(--htt-gold); font-size: 10px; font-weight: 700; letter-spacing: .12em; }
-.mission-phase-rail > div strong { font: 19px/1.2 var(--htt-font-editorial); }
+.mission-phase-rail { display: grid; grid-template-columns: minmax(230px, .9fr) minmax(0, 2.1fr); align-items: center; gap: var(--htt-space-5); margin-bottom: var(--htt-space-5); padding: var(--htt-space-4) var(--htt-space-5); border: 1px solid var(--htt-border); border-radius: 16px; background: var(--htt-surface); }
+.mission-phase-summary { display: grid; gap: 5px; }
+.mission-phase-summary > small { color: var(--htt-gold); font-size: 10px; font-weight: 700; letter-spacing: .12em; }
+.mission-phase-summary > strong { font: 19px/1.25 var(--htt-font-editorial); }
+.mission-phase-summary > span { color: var(--htt-muted); font-size: 11px; }
+.mission-phase-meter { height: 3px; margin-top: var(--htt-space-2); overflow: hidden; border-radius: 999px; background: var(--htt-border); }
+.mission-phase-meter > span { display: block; height: 100%; border-radius: inherit; background: var(--htt-gold); transition: width 220ms ease; }
 .mission-phase-rail ol { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: var(--htt-space-2); padding: 0; list-style: none; }
-.mission-phase-rail li { display: grid; justify-items: center; gap: 6px; color: var(--htt-faint); text-align: center; }
-.mission-phase-rail li > span { display: grid; width: 26px; height: 26px; place-items: center; border: 1px solid var(--htt-border); border-radius: 50%; background: var(--htt-ground); font-size: 11px; }
-.mission-phase-rail li small { font-size: 10px; line-height: 1.25; }
+.mission-phase-rail li { display: grid; grid-template-columns: 28px minmax(0, 1fr); align-items: center; gap: 8px; color: var(--htt-faint); text-align: left; }
+.mission-phase-rail li > span { display: grid; width: 28px; height: 28px; place-items: center; border: 1px solid var(--htt-border); border-radius: 50%; background: var(--htt-ground); font-size: 11px; }
+.mission-phase-rail li > div { display: grid; gap: 2px; min-width: 0; }
+.mission-phase-rail li strong { color: inherit; font-size: 11px; line-height: 1.2; }
+.mission-phase-rail li small { font-size: 9px; line-height: 1.2; }
 .mission-phase-rail li.is-current { color: var(--htt-gold); }
 .mission-phase-rail li.is-current > span { border-color: var(--htt-gold); box-shadow: 0 0 0 3px rgba(232, 199, 117, .09); }
 .mission-phase-rail li.is-complete { color: var(--htt-text); }
 .mission-phase-rail li.is-complete > span { color: #10251a; border-color: var(--htt-success); background: var(--htt-success); }
+.mission-phase-rail li.is-locked { opacity: .62; }
 .mission-clue-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--htt-space-4); margin-bottom: var(--htt-space-6); }
 .mission-clue { display: flex; min-height: 310px; flex-direction: column; }
 .mission-clue-open { display: grid; width: 100%; padding: 0; color: inherit; background: transparent; border: 0; text-align: left; cursor: pointer; }
@@ -196,7 +202,7 @@ html, body { overflow-x: clip; }
   .mission-completion > .journey-button { grid-column: auto; justify-self: start; }
 }
 @media (max-width: 680px) {
-  .mission-phase-rail ol { grid-template-columns: repeat(5, 82px); overflow-x: auto; padding-bottom: 4px; }
+  .mission-phase-rail ol { grid-template-columns: repeat(5, 118px); overflow-x: auto; padding-bottom: 4px; }
   .challenge-feature, .challenge-feature-copy { min-height: 320px; }
   .challenge-feature-copy { width: 100%; }
   .challenge-feature h2 { max-width: 24ch; }

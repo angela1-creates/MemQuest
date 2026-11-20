@@ -95,14 +95,25 @@ function MissionInvestigation({ challenge: c, draft, completed, dispatch, review
     { label: "Defend the claim", complete: Boolean(!c.causalReasoning || draft.causalReasoningResolved) },
     { label: "Unlock artifact", complete: completed },
   ];
+  const currentPhaseIndex = phases.findIndex(phase => !phase.complete);
+  const activePhaseIndex = currentPhaseIndex === -1 ? phases.length - 1 : currentPhaseIndex;
+  const completedPhaseCount = phases.filter(phase => phase.complete).length;
   const requestPrediction = () => {
     predictionRef.current?.scrollIntoView({ block: "center", behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
     predictionRef.current?.querySelector("button:not(:disabled)")?.focus({ preventScroll: true });
   };
   return <>
     <section className="mission-phase-rail" aria-label="Investigation progress">
-      <div><small>CASE FILE PROGRESS</small><strong>{completed ? c.artifact.title : "Artifact locked"}</strong></div>
-      <ol>{phases.map((phase, index) => <li key={phase.label} className={phase.complete ? "is-complete" : index === phases.findIndex(item => !item.complete) ? "is-current" : ""}><span>{phase.complete ? <Check size={14} weight="bold" /> : index + 1}</span><small>{phase.label}{phase.detail ? ` · ${phase.detail}` : ""}</small></li>)}</ol>
+      <div className="mission-phase-summary">
+        <small>INVESTIGATION PROGRESS</small>
+        <strong>{completed ? "Investigation complete" : `Step ${activePhaseIndex + 1} of ${phases.length} · ${phases[activePhaseIndex].label}`}</strong>
+        <span>{completed ? c.artifact.title : `${completedPhaseCount} of ${phases.length} phases complete`}</span>
+        <div className="mission-phase-meter" role="progressbar" aria-label="Investigation phases completed" aria-valuemin="0" aria-valuemax={phases.length} aria-valuenow={completedPhaseCount}><span style={{ width: `${(completedPhaseCount / phases.length) * 100}%` }} /></div>
+      </div>
+      <ol>{phases.map((phase, index) => {
+        const isCurrent = index === activePhaseIndex && !completed;
+        return <li key={phase.label} className={phase.complete ? "is-complete" : isCurrent ? "is-current" : "is-locked"} aria-current={isCurrent ? "step" : undefined}><span>{phase.complete ? <Check size={14} weight="bold" /> : index + 1}</span><div><strong>{phase.label}</strong><small>{phase.detail ? `${phase.detail} · ` : ""}{phase.complete ? "Complete" : isCurrent ? "Current step" : "Locked"}</small></div></li>;
+      })}</ol>
     </section>
     {c.priorContext && <aside className="mission-prior-context"><Clock size={22} /><div><h2>{c.priorContext.title}</h2><p>{c.priorContext.text}</p><a href={c.priorContext.sourceUrl} target="_blank" rel="noreferrer">{c.priorContext.sourceLabel}</a></div></aside>}
     {c.contextEventIds && <section className="mission-context" aria-label="Four-event historical context">{c.contextEventIds.map((id, index) => { const event = TIMELINE_EVENTS.find(item => item.id === id); return <div key={id}><small>{event.year}</small><strong>{event.title}</strong>{index < c.contextEventIds.length - 1 && <ArrowRight size={15} />}</div>; })}</section>}
@@ -115,7 +126,7 @@ function MissionInvestigation({ challenge: c, draft, completed, dispatch, review
       return <article className={`journey-panel mission-clue ${visited ? "is-examined" : ""} ${found ? "is-found" : ""}`} key={clue.id}>
         <button type="button" className="mission-clue-open" disabled={completed || found} aria-expanded={visited} onClick={canInvestigate ? () => dispatch({ type: "VISIT_MISSION_CLUE", id: c.id, clueId: clue.id }) : requestPrediction}>
           <span className="mission-clue-status"><span>Evidence file {String(c.clues.indexOf(clue) + 1).padStart(2, "0")}</span><small>{found ? "Collected" : visited ? "Opened" : canInvestigate ? "Ready to open" : "Prediction required"}</small></span>
-          <span className="mission-clue-heading"><strong>{found || visited ? clue.title : "Hidden clue"}</strong>{found ? <CheckCircle size={24} weight="duotone" /> : visited ? <BookOpen size={24} /> : canInvestigate ? <Target size={24} /> : <Lock size={24} />}</span>
+          <span className="mission-clue-heading"><strong>{clue.title}</strong>{found ? <CheckCircle size={24} weight="duotone" /> : visited ? <BookOpen size={24} /> : canInvestigate ? <Target size={24} /> : <Lock size={24} />}</span>
           <span className="mission-clue-prompt">{found ? clue.reveal : visited ? "Source opened. Examine the record below, then add it to your case file." : clue.prompt}</span>
           {!visited && !found && <span className="mission-clue-cta">{canInvestigate ? "Open evidence file" : "Make prediction to unseal"}<ArrowRight size={15} /></span>}
         </button>
